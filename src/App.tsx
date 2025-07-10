@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import type { Coupon, DominosMenu } from "@/types/dominos"
+import type { Coupon } from "@/types/dominos"
 
 const RATE_LIMIT = 5
 
