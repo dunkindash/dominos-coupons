@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/store/[storeId]/menu.js": {
+    "api/store/[storeId]/menu.cjs": {
       "maxDuration": 10
     }
   },
