@@ -106,7 +106,7 @@ module.exports = async function handler(req, res) {
       })
     }
 
-    const updatedData = rateLimit.get(clientId)!
+    const updatedData = rateLimit.get(clientId)
     
     // Add rate limit headers
     res.setHeader('X-RateLimit-Limit', RATE_LIMIT.toString())
