@@ -1,7 +1,7 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+// @ts-check
 
 // Simple in-memory rate limiting (resets on each deployment)
-const rateLimit = new Map<string, { count: number; resetTime: number }>()
+const rateLimit = new Map()
 
 const RATE_LIMIT = 5
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000 // 10 minutes in milliseconds
@@ -15,7 +15,9 @@ function cleanupOldEntries() {
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+module.exports = async function handler(req, res) {
+  console.log('API called with method:', req.method, 'and query:', req.query)
+  
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
@@ -37,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Get client identifier (IP + User Agent for better identification)
   const forwarded = req.headers['x-forwarded-for']
-  const ip = typeof forwarded === 'string' ? forwarded.split(',')[0] : req.socket.remoteAddress
+  const ip = typeof forwarded === 'string' ? forwarded.split(',')[0] : 'unknown'
   const userAgent = req.headers['user-agent'] || 'unknown'
   const clientId = `${ip}:${userAgent}`
 
@@ -124,6 +126,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   } catch (error) {
     console.error('API Error:', error)
-    return res.status(500).json({ error: 'Internal server error' })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: errorMessage,
+      debug: process.env.NODE_ENV !== 'production' ? errorMessage : undefined
+    })
   }
 }
