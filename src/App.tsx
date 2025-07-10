@@ -17,6 +17,29 @@ function App() {
   const [firstRequestTime, setFirstRequestTime] = useState<number | null>(null)
   const [, setTick] = useState(0) // Force re-render for timer
 
+  const checkRateLimit = async () => {
+    if (!storeId) return
+    
+    try {
+      const apiUrl = import.meta.env.PROD 
+        ? `/api/store/${storeId}/menu`
+        : `/api/power/store/${storeId}/menu?lang=en`
+      
+      const response = await fetch(apiUrl, { method: 'HEAD' })
+      
+      const remaining = parseInt(response.headers.get('X-RateLimit-Remaining') || '5')
+      const limit = parseInt(response.headers.get('X-RateLimit-Limit') || '5')
+      const resetTime = response.headers.get('X-RateLimit-Reset')
+      
+      setRequestCount(limit - remaining)
+      if (resetTime && remaining < limit) {
+        setFirstRequestTime(new Date(resetTime).getTime() - (10 * 60 * 1000))
+      }
+    } catch (error) {
+      // Silently fail - rate limit display will just show default state
+    }
+  }
+
   const fetchCoupons = async () => {
     if (!storeId) return
     
@@ -45,10 +68,11 @@ function App() {
       
       // Update rate limit info from server response
       if (data._meta) {
-        setRequestCount(RATE_LIMIT - data._meta.requestsRemaining)
-        if (!firstRequestTime) {
-          setFirstRequestTime(Date.now())
-        }
+        const newRequestCount = RATE_LIMIT - data._meta.requestsRemaining
+        const newFirstRequestTime = firstRequestTime || Date.now()
+        
+        setRequestCount(newRequestCount)
+        setFirstRequestTime(newFirstRequestTime)
       }
       
       // Extract store information
@@ -101,6 +125,13 @@ function App() {
     e.preventDefault()
     fetchCoupons()
   }
+
+  // Check rate limit when store ID changes
+  useEffect(() => {
+    if (storeId) {
+      checkRateLimit()
+    }
+  }, [storeId])
 
   const toggleCardExpansion = (cardId: string) => {
     setExpandedCards(prev => {

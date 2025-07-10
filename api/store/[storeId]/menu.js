@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     return res.status(200).end()
   }
 
-  if (req.method !== 'GET') {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
@@ -69,6 +69,19 @@ export default async function handler(req, res) {
       clientData.count = 0
       clientData.resetTime = now + RATE_LIMIT_WINDOW
     }
+  }
+
+  // For HEAD requests, just return rate limit info without fetching data
+  if (req.method === 'HEAD') {
+    const currentData = rateLimit.get(clientId)
+    const requestsUsed = currentData ? currentData.count : 0
+    const resetTime = currentData ? currentData.resetTime : Date.now() + RATE_LIMIT_WINDOW
+    
+    res.setHeader('X-RateLimit-Limit', RATE_LIMIT.toString())
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, RATE_LIMIT - requestsUsed).toString())
+    res.setHeader('X-RateLimit-Reset', new Date(resetTime).toISOString())
+    
+    return res.status(200).end()
   }
 
   try {
