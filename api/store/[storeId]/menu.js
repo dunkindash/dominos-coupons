@@ -1,5 +1,3 @@
-// @ts-check
-
 // Simple in-memory rate limiting (resets on each deployment)
 const rateLimit = new Map()
 
@@ -15,7 +13,7 @@ function cleanupOldEntries() {
   }
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   console.log('API called with method:', req.method, 'and query:', req.query)
   
   // Enable CORS
