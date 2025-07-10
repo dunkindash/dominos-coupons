@@ -29,40 +29,6 @@ function App() {
   })
   const [, setTick] = useState(0) // Force re-render for timer
 
-  const checkRateLimit = async () => {
-    if (!storeId) return
-    
-    try {
-      const apiUrl = import.meta.env.PROD 
-        ? `/api/store/${storeId}/menu`
-        : `/api/power/store/${storeId}/menu?lang=en`
-      
-      const authToken = sessionStorage.getItem('authToken')
-      const response = await fetch(apiUrl, { 
-        method: 'HEAD',
-        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
-      })
-      
-      const remaining = parseInt(response.headers.get('X-RateLimit-Remaining') || '5')
-      const limit = parseInt(response.headers.get('X-RateLimit-Limit') || '5')
-      const resetTime = response.headers.get('X-RateLimit-Reset')
-      
-      const newRequestCount = limit - remaining
-      const newFirstRequestTime = resetTime && remaining < limit ? 
-        new Date(resetTime).getTime() - (10 * 60 * 1000) : firstRequestTime
-      
-      setRequestCount(newRequestCount)
-      setFirstRequestTime(newFirstRequestTime)
-      
-      // Store in localStorage for persistence
-      localStorage.setItem('rateLimit', JSON.stringify({
-        requestCount: newRequestCount,
-        firstRequestTime: newFirstRequestTime
-      }))
-    } catch (error) {
-      // Silently fail - rate limit display will just show default state
-    }
-  }
 
   const fetchCoupons = async () => {
     if (!storeId) return
@@ -80,6 +46,24 @@ function App() {
       const response = await fetch(apiUrl, {
         headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
       })
+      
+      // Update rate limit info from response headers
+      const remaining = parseInt(response.headers.get('X-RateLimit-Remaining') || '5')
+      const limit = parseInt(response.headers.get('X-RateLimit-Limit') || '5')
+      const resetTime = response.headers.get('X-RateLimit-Reset')
+      
+      const newRequestCount = limit - remaining
+      const newFirstRequestTime = resetTime && remaining < limit ? 
+        new Date(resetTime).getTime() - (10 * 60 * 1000) : firstRequestTime
+      
+      setRequestCount(newRequestCount)
+      setFirstRequestTime(newFirstRequestTime)
+      
+      // Store in localStorage for persistence
+      localStorage.setItem('rateLimit', JSON.stringify({
+        requestCount: newRequestCount,
+        firstRequestTime: newFirstRequestTime
+      }))
       
       if (response.status === 429) {
         const errorData = await response.json()
@@ -101,20 +85,7 @@ function App() {
       
       const data = await response.json()
       
-      // Update rate limit info from server response
-      if (data._meta) {
-        const newRequestCount = RATE_LIMIT - data._meta.requestsRemaining
-        const newFirstRequestTime = firstRequestTime || Date.now()
-        
-        setRequestCount(newRequestCount)
-        setFirstRequestTime(newFirstRequestTime)
-        
-        // Store in localStorage for persistence
-        localStorage.setItem('rateLimit', JSON.stringify({
-          requestCount: newRequestCount,
-          firstRequestTime: newFirstRequestTime
-        }))
-      }
+      // Rate limit info is now handled above from response headers
       
       // Extract store information
       setStoreInfo({
@@ -167,23 +138,7 @@ function App() {
     fetchCoupons()
   }
 
-  // Check rate limit when store ID changes with debounce
-  useEffect(() => {
-    if (storeId && storeId.length >= 4) {
-      const timer = setTimeout(() => {
-        checkRateLimit()
-      }, 1000) // Wait 1 second after user stops typing
-      
-      return () => clearTimeout(timer)
-    }
-  }, [storeId])
-
-  // Check rate limit on page load if storeId exists
-  useEffect(() => {
-    if (storeId && storeId.length >= 4) {
-      checkRateLimit()
-    }
-  }, [isAuthenticated])
+  // Note: Rate limit checking is now integrated into fetchCoupons to avoid duplicate API calls
 
   const toggleCardExpansion = (cardId: string) => {
     setExpandedCards(prev => {
