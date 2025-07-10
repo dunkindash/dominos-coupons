@@ -1,3 +1,5 @@
+import { verifyToken } from '../../auth.js'
+
 // Simple in-memory rate limiting (resets on each deployment)
 const rateLimit = new Map()
 
@@ -33,6 +35,12 @@ export default async function handler(req, res) {
   
   if (!storeId || typeof storeId !== 'string') {
     return res.status(400).json({ error: 'Store ID is required' })
+  }
+
+  // Check authentication
+  const authToken = req.headers.authorization?.replace('Bearer ', '')
+  if (!verifyToken(authToken)) {
+    return res.status(401).json({ error: 'Unauthorized' })
   }
 
   // Get client identifier (IP + User Agent for better identification)

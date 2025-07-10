@@ -3,18 +3,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { Coupon } from "@/types/dominos"
+import PasswordProtection from './components/PasswordProtection'
 
 const RATE_LIMIT = 5
 
 function App() {
-  const [storeId, setStoreId] = useState('')
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem('authToken') !== null
+  })
+  const [storeId, setStoreId] = useState(() => {
+    return localStorage.getItem('lastStoreId') || ''
+  })
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
   const [storeInfo, setStoreInfo] = useState<any>(null)
-  const [requestCount, setRequestCount] = useState(0)
-  const [firstRequestTime, setFirstRequestTime] = useState<number | null>(null)
+  const [requestCount, setRequestCount] = useState(() => {
+    const stored = localStorage.getItem('rateLimit')
+    return stored ? JSON.parse(stored).requestCount : 0
+  })
+  const [firstRequestTime, setFirstRequestTime] = useState<number | null>(() => {
+    const stored = localStorage.getItem('rateLimit')
+    return stored ? JSON.parse(stored).firstRequestTime : null
+  })
   const [, setTick] = useState(0) // Force re-render for timer
 
   const checkRateLimit = async () => {
@@ -25,16 +37,28 @@ function App() {
         ? `/api/store/${storeId}/menu`
         : `/api/power/store/${storeId}/menu?lang=en`
       
-      const response = await fetch(apiUrl, { method: 'HEAD' })
+      const authToken = sessionStorage.getItem('authToken')
+      const response = await fetch(apiUrl, { 
+        method: 'HEAD',
+        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+      })
       
       const remaining = parseInt(response.headers.get('X-RateLimit-Remaining') || '5')
       const limit = parseInt(response.headers.get('X-RateLimit-Limit') || '5')
       const resetTime = response.headers.get('X-RateLimit-Reset')
       
-      setRequestCount(limit - remaining)
-      if (resetTime && remaining < limit) {
-        setFirstRequestTime(new Date(resetTime).getTime() - (10 * 60 * 1000))
-      }
+      const newRequestCount = limit - remaining
+      const newFirstRequestTime = resetTime && remaining < limit ? 
+        new Date(resetTime).getTime() - (10 * 60 * 1000) : firstRequestTime
+      
+      setRequestCount(newRequestCount)
+      setFirstRequestTime(newFirstRequestTime)
+      
+      // Store in localStorage for persistence
+      localStorage.setItem('rateLimit', JSON.stringify({
+        requestCount: newRequestCount,
+        firstRequestTime: newFirstRequestTime
+      }))
     } catch (error) {
       // Silently fail - rate limit display will just show default state
     }
@@ -52,11 +76,21 @@ function App() {
         ? `/api/store/${storeId}/menu`
         : `/api/power/store/${storeId}/menu?lang=en`
         
-      const response = await fetch(apiUrl)
+      const authToken = sessionStorage.getItem('authToken')
+      const response = await fetch(apiUrl, {
+        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+      })
       
       if (response.status === 429) {
         const errorData = await response.json()
         setError(errorData.message || 'Rate limit exceeded')
+        return
+      }
+      
+      if (response.status === 401) {
+        setError('Session expired. Please refresh the page.')
+        setIsAuthenticated(false)
+        sessionStorage.removeItem('authToken')
         return
       }
       
@@ -73,6 +107,12 @@ function App() {
         
         setRequestCount(newRequestCount)
         setFirstRequestTime(newFirstRequestTime)
+        
+        // Store in localStorage for persistence
+        localStorage.setItem('rateLimit', JSON.stringify({
+          requestCount: newRequestCount,
+          firstRequestTime: newFirstRequestTime
+        }))
       }
       
       // Extract store information
@@ -126,12 +166,23 @@ function App() {
     fetchCoupons()
   }
 
-  // Check rate limit when store ID changes
+  // Check rate limit when store ID changes with debounce
   useEffect(() => {
-    if (storeId) {
-      checkRateLimit()
+    if (storeId && storeId.length >= 4) {
+      const timer = setTimeout(() => {
+        checkRateLimit()
+      }, 1000) // Wait 1 second after user stops typing
+      
+      return () => clearTimeout(timer)
     }
   }, [storeId])
+
+  // Check rate limit on page load if storeId exists
+  useEffect(() => {
+    if (storeId && storeId.length >= 4) {
+      checkRateLimit()
+    }
+  }, [isAuthenticated])
 
   const toggleCardExpansion = (cardId: string) => {
     setExpandedCards(prev => {
@@ -154,6 +205,7 @@ function App() {
           // Reset after 10 minutes
           setRequestCount(0)
           setFirstRequestTime(null)
+          localStorage.removeItem('rateLimit')
         } else {
           // Force re-render to update timer
           setTick(prev => prev + 1)
@@ -163,6 +215,10 @@ function App() {
 
     return () => clearInterval(interval)
   }, [firstRequestTime])
+
+  if (!isAuthenticated) {
+    return <PasswordProtection onAuthenticated={() => setIsAuthenticated(true)} />
+  }
 
   return (
     <div className="min-h-screen bg-blue-600 p-4">
@@ -188,7 +244,10 @@ function App() {
                     type="text"
                     placeholder="Enter store number (e.g., 7046)"
                     value={storeId}
-                    onChange={(e) => setStoreId(e.target.value)}
+                    onChange={(e) => {
+                      setStoreId(e.target.value)
+                      localStorage.setItem('lastStoreId', e.target.value)
+                    }}
                     className="w-full transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <div className="space-y-1">
