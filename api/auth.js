@@ -3,8 +3,8 @@ import crypto from 'crypto'
 // Change this to your desired password
 const CORRECT_PASSWORD = 'CodeGasm26@'
 
-// Simple session store (resets on deployment)
-const sessions = new Map()
+// Secret key for JWT-like tokens (in production, use environment variable)
+const JWT_SECRET = 'your-secret-key-change-this-in-production'
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -35,35 +35,55 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid password' })
   }
 
-  // Generate secure session token
-  const token = crypto.randomBytes(32).toString('hex')
-  const sessionData = {
-    token,
-    createdAt: Date.now(),
-    expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+  // Generate JWT-like token with expiration
+  const expiresAt = Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+  const payload = {
+    exp: expiresAt,
+    iat: Date.now()
   }
+  
+  const token = Buffer.from(JSON.stringify(payload)).toString('base64') + '.' + 
+               crypto.createHmac('sha256', JWT_SECRET).update(JSON.stringify(payload)).digest('hex')
 
-  sessions.set(token, sessionData)
-
-  // Clean up expired sessions
-  for (const [key, session] of sessions.entries()) {
-    if (session.expiresAt < Date.now()) {
-      sessions.delete(key)
-    }
-  }
-
-  res.status(200).json({ token, expiresAt: sessionData.expiresAt })
+  res.status(200).json({ token, expiresAt })
 }
 
 // Export function to verify tokens (for other API endpoints)
 export function verifyToken(token) {
-  if (!token) return false
+  console.log('Verifying token:', token ? 'present' : 'missing')
   
-  const session = sessions.get(token)
-  if (!session || session.expiresAt < Date.now()) {
-    if (session) sessions.delete(token)
+  if (!token) {
+    console.log('No token provided')
     return false
   }
   
-  return true
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 2) {
+      console.log('Invalid token format')
+      return false
+    }
+    
+    const [payloadBase64, signature] = parts
+    const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString())
+    
+    // Verify signature
+    const expectedSignature = crypto.createHmac('sha256', JWT_SECRET).update(JSON.stringify(payload)).digest('hex')
+    if (signature !== expectedSignature) {
+      console.log('Invalid token signature')
+      return false
+    }
+    
+    // Check expiration
+    if (payload.exp < Date.now()) {
+      console.log('Token expired')
+      return false
+    }
+    
+    console.log('Token verified successfully')
+    return true
+  } catch (error) {
+    console.log('Token verification error:', error.message)
+    return false
+  }
 }

@@ -58,6 +58,7 @@ export default function PasswordProtection({ onAuthenticated }: PasswordProtecti
               onChange={(e) => setPassword(e.target.value)}
               className="w-full"
               autoFocus
+              autoComplete="new-password"
             />
             {error && (
               <p className="text-red-600 text-sm">{error}</p>

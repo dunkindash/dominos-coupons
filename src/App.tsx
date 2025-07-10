@@ -88,6 +88,7 @@ function App() {
       }
       
       if (response.status === 401) {
+        console.log('Authentication failed, logging out user')
         setError('Session expired. Please refresh the page.')
         setIsAuthenticated(false)
         sessionStorage.removeItem('authToken')
