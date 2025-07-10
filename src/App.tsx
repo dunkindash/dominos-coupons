@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button"
 import type { Coupon } from "@/types/dominos"
 import PasswordProtection from './components/PasswordProtection'
 
-const RATE_LIMIT = 5
-
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('authToken') !== null
