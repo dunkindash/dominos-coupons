@@ -43,6 +43,20 @@ function extractMenuItemHints(description: string): string[] {
     hints.push(...quantityMatches.map(qty => `Quantity: ${qty}`))
   }
   
+  // Detect time-sensitive language
+  const timeSensitiveTerms = [
+    'today only', 'limited time', 'ends tonight', 'ends at midnight',
+    'ends today', 'while supplies last', 'limited offer',
+    'ends soon', 'expires today', 'flash sale', 'hourly special',
+    'lunch special', 'dinner special', 'happy hour'
+  ]
+  
+  timeSensitiveTerms.forEach(term => {
+    if (lowerDesc.includes(term)) {
+      hints.push(`⏰ ${term}`)
+    }
+  })
+  
   return [...new Set(hints)] // Remove duplicates
 }
 
@@ -183,6 +197,17 @@ function App() {
             const serviceMethodMatch = coupon.Tags.match(/ServiceMethod=([^,]+)/)
             if (serviceMethodMatch) {
               coupon.ServiceMethod = serviceMethodMatch[1]
+            }
+            
+            // Extract time-based restrictions from Tags
+            const timeRestrictionMatch = coupon.Tags.match(/TimeRestriction=([^,]+)/)
+            if (timeRestrictionMatch) {
+              coupon.TimeRestriction = timeRestrictionMatch[1]
+            }
+            
+            const validHoursMatch = coupon.Tags.match(/ValidHours=([^,]+)/)
+            if (validHoursMatch) {
+              coupon.ValidHours = validHoursMatch[1]
             }
           }
           
@@ -379,8 +404,204 @@ function App() {
         </div>
 
         {coupons.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {coupons.map((coupon, index) => {
+          <>
+            {/* Limited Time Deals Section */}
+            {coupons.some(coupon => 
+              (coupon.TimeRestriction || coupon.ValidHours) || 
+              (coupon.MenuItemHints && coupon.MenuItemHints.some(hint => hint.includes('⏰')))
+            ) && (
+              <div className="mb-8">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold text-red-200 mb-2 flex items-center justify-center gap-2">
+                    🔥 Freshly Baked Deals 🔥
+                  </h2>
+                  <p className="text-red-100 text-sm">
+                    ⏰ Limited time offers - grab them while they're hot!
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {coupons
+                    .filter(coupon => 
+                      (coupon.TimeRestriction || coupon.ValidHours) || 
+                      (coupon.MenuItemHints && coupon.MenuItemHints.some(hint => hint.includes('⏰')))
+                    )
+                    .map((coupon, index) => {
+                      const cardId = coupon.Code || coupon.ID || `limited-${index}`
+                      const isExpanded = expandedCards.has(cardId)
+                      
+                      return (
+                        <Card key={cardId} className="hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col h-full shadow-lg border-0 ring-2 ring-red-200">
+                          <CardHeader className="pb-4 bg-gradient-to-r from-red-50 to-orange-50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">
+                                🔥 HOT DEAL
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="flex-1">
+                                <CardTitle className="text-lg leading-tight mb-2 font-bold">
+                                  {coupon.Name || 'Special Offer'}
+                                </CardTitle>
+                                <div className="flex flex-wrap gap-2">
+                                  <CardDescription className="text-sm bg-gray-100 px-2 py-1 rounded-md inline-block">
+                                    Code: {coupon.Code}
+                                  </CardDescription>
+                                  {coupon.VirtualCode && (
+                                    <CardDescription className="text-sm bg-blue-100 px-2 py-1 rounded-md inline-block">
+                                      Online: {coupon.VirtualCode}
+                                    </CardDescription>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-2xl font-bold text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                                  ${coupon.Price || 'N/A'}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-2 font-medium">
+                                  {coupon.ExpirationDate ? (
+                                    `Expires: ${new Date(coupon.ExpirationDate).toLocaleDateString('en-US', { 
+                                      month: 'short', 
+                                      day: 'numeric', 
+                                      year: 'numeric' 
+                                    })}`
+                                  ) : (
+                                    'Expiration: Unknown'
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="flex flex-col flex-grow">
+                            <div className="flex-grow">
+                              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+                                {coupon.Description}
+                              </p>
+                              
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {coupon.Local === 'true' && (
+                                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium shadow-sm">
+                                    Local Offer
+                                  </span>
+                                )}
+                                {coupon.Bundle === 'true' && (
+                                  <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium shadow-sm">
+                                    Bundle Deal
+                                  </span>
+                                )}
+                                {coupon.ServiceMethod && (
+                                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium shadow-sm">
+                                    {coupon.ServiceMethod} Only
+                                  </span>
+                                )}
+                                {coupon.MinimumOrder && (
+                                  <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium shadow-sm">
+                                    Min Order: ${coupon.MinimumOrder}
+                                  </span>
+                                )}
+                                <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium shadow-sm">
+                                  🔥 Limited Time
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="mt-auto">
+                              {/* Key coupon details */}
+                              <div className="mb-4 space-y-2">
+                                {(coupon.Value || coupon.Type) && (
+                                  <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
+                                    {coupon.Value && <span className="font-medium">Value={coupon.Value}</span>}
+                                    {coupon.Value && coupon.Type && <span>,</span>}
+                                    {coupon.Type && <span className="font-medium">Type={coupon.Type}</span>}
+                                  </div>
+                                )}
+                                
+                                <div className="flex justify-between items-center text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
+                                  <span className="font-medium">Sort: {coupon.SortSeq}</span>
+                                  {coupon.GroupCodes && (
+                                    <span className="font-medium">Groups: {coupon.GroupCodes}</span>
+                                  )}
+                                </div>
+                                
+                                {coupon.PriceInfo && (
+                                  <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
+                                    {coupon.PriceInfo}
+                                  </div>
+                                )}
+                              </div>
+
+                              {coupon.MenuItemHints && coupon.MenuItemHints.length > 0 && (
+                                <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                                  <h4 className="font-semibold text-sm mb-2 text-green-800">🍕 What's Included:</h4>
+                                  <div className="flex flex-wrap gap-1">
+                                    {coupon.MenuItemHints.map((hint: string, index: number) => (
+                                      <span key={index} className="px-2 py-1 bg-white text-green-700 rounded text-xs font-medium border border-green-200">
+                                        {hint}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {(coupon.EligibleProducts || coupon.EligibleCategories) && (
+                                <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                  <h4 className="font-semibold text-sm mb-2 text-blue-800">📋 Eligible Items:</h4>
+                                  {coupon.EligibleCategories && (
+                                    <div className="mb-2">
+                                      <span className="text-xs font-medium text-blue-600">Categories: </span>
+                                      <span className="text-xs text-blue-700">{coupon.EligibleCategories.join(', ')}</span>
+                                    </div>
+                                  )}
+                                  {coupon.EligibleProducts && (
+                                    <div>
+                                      <span className="text-xs font-medium text-blue-600">Products: </span>
+                                      <span className="text-xs text-blue-700">{coupon.EligibleProducts.join(', ')}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              <Button
+                                size="sm"
+                                onClick={() => toggleCardExpansion(cardId)}
+                                className="w-full text-xs !bg-red-600 hover:!bg-red-700 !text-white transition-all duration-200 shadow-md hover:shadow-lg"
+                              >
+                                {isExpanded ? 'Hide Details' : 'Show All Details'}
+                              </Button>
+
+                              {isExpanded && (
+                                <div className="mt-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                                  <h4 className="font-semibold text-sm mb-3 text-gray-800">All Fields:</h4>
+                                  <div className="grid grid-cols-1 gap-2 text-xs max-h-48 overflow-y-auto">
+                                    {Object.entries(coupon)
+                                      .filter(([_, value]) => value !== null && value !== undefined && value !== '')
+                                      .map(([key, value]) => (
+                                        <div key={key} className="flex flex-col gap-1 p-2 bg-white rounded border border-gray-100">
+                                          <span className="font-medium text-gray-600">{key}:</span>
+                                          <span className="text-gray-800 break-all text-left pl-2">
+                                            {String(value)}
+                                          </span>
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                </div>
+              </div>
+            )}
+
+            {/* Regular Coupons Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {coupons
+                .filter(coupon => 
+                  !((coupon.TimeRestriction || coupon.ValidHours) || 
+                    (coupon.MenuItemHints && coupon.MenuItemHints.some(hint => hint.includes('⏰'))))
+                )
+                .map((coupon, index) => {
               const cardId = coupon.Code || coupon.ID || index.toString()
               const isExpanded = expandedCards.has(cardId)
               
@@ -446,6 +667,16 @@ function App() {
                         {coupon.MinimumOrder && (
                           <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium shadow-sm">
                             Min Order: ${coupon.MinimumOrder}
+                          </span>
+                        )}
+                        {(coupon.TimeRestriction || coupon.ValidHours) && (
+                          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium shadow-sm">
+                            ⏰ Time Limited
+                          </span>
+                        )}
+                        {coupon.MenuItemHints && coupon.MenuItemHints.some(hint => hint.includes('⏰')) && (
+                          <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium shadow-sm">
+                            🔥 Limited Time
                           </span>
                         )}
                       </div>
@@ -538,7 +769,8 @@ function App() {
                 </Card>
               )
             })}
-          </div>
+            </div>
+          </>
         )}
 
         {coupons.length === 0 && !loading && !error && (
