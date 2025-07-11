@@ -423,6 +423,31 @@ function App() {
             <p className="text-gray-500">No coupons found for this store.</p>
           </div>
         )}
+
+        {coupons.length === 0 && !storeId && !loading && (
+          <div className="text-center py-16">
+            <div className="mb-8">
+              <div className="text-8xl mb-4">🍕</div>
+              <h2 className="text-2xl font-bold text-blue-100 mb-2">
+                Ready to Find Great Deals?
+              </h2>
+              <p className="text-blue-200 text-lg">
+                Enter a store number or search by address to discover amazing Domino's coupons!
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-blue-200">
+              <div className="flex items-center gap-2">
+                <div className="text-2xl">🏪</div>
+                <span className="text-sm">Enter store number directly</span>
+              </div>
+              <div className="text-blue-300">or</div>
+              <div className="flex items-center gap-2">
+                <div className="text-2xl">📍</div>
+                <span className="text-sm">Search by your address</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
