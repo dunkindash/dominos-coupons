@@ -405,29 +405,27 @@ function App() {
 
         {coupons.length > 0 && (
           <>
-            {/* Limited Time Deals Section - Expiring Today */}
+            {/* Late Night Deals Section */}
             {coupons.some(coupon => {
-              if (!coupon.ExpirationDate) return false
-              const today = new Date()
-              const expirationDate = new Date(coupon.ExpirationDate)
-              return today.toDateString() === expirationDate.toDateString()
+              const text = [coupon.Name, coupon.Description].filter(Boolean).join(' ').toLowerCase()
+              const lateNightKeywords = ['late night', 'after 10', 'after 11', 'after midnight', 'night owl', 'midnight', '10pm', '11pm', 'late', 'night only', 'evening', 'after dark']
+              return lateNightKeywords.some(keyword => text.includes(keyword))
             }) && (
               <div className="mb-8">
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-red-200 mb-2 flex items-center justify-center gap-2">
-                    🔥 Freshly Baked Deals 🔥
+                  <h2 className="text-2xl font-bold text-purple-200 mb-2 flex items-center justify-center gap-2">
+                    🌙 Late Night Deals 🌙
                   </h2>
-                  <p className="text-red-100 text-sm">
-                    ⏰ Expiring today - grab them while they're hot!
+                  <p className="text-purple-100 text-sm">
+                    🦉 Perfect for night owls - special late night offers!
                   </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {coupons
                     .filter(coupon => {
-                      if (!coupon.ExpirationDate) return false
-                      const today = new Date()
-                      const expirationDate = new Date(coupon.ExpirationDate)
-                      return today.toDateString() === expirationDate.toDateString()
+                      const text = [coupon.Name, coupon.Description].filter(Boolean).join(' ').toLowerCase()
+                      const lateNightKeywords = ['late night', 'after 10', 'after 11', 'after midnight', 'night owl', 'midnight', '10pm', '11pm', 'late', 'night only', 'evening', 'after dark']
+                      return lateNightKeywords.some(keyword => text.includes(keyword))
                     })
                     .map((coupon, index) => {
                       const cardId = coupon.Code || coupon.ID || `limited-${index}`
