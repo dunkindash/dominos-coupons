@@ -309,9 +309,9 @@ function App() {
                     <div className="py-2">
                       <span className="font-medium text-gray-600 block mb-2">Available Services:</span>
                       <div className="flex flex-wrap gap-2">
-                        {storeInfo.validServiceMethods.split(':').map((service) => {
+                        {storeInfo.validServiceMethods.split(':').map((service: string) => {
                           const trimmedService = service.trim()
-                          const serviceConfig = {
+                          const serviceConfig: Record<string, { icon: string; color: string }> = {
                             'Delivery': { icon: '🚚', color: 'bg-green-100 text-green-800' },
                             'Carryout': { icon: '🏪', color: 'bg-blue-100 text-blue-800' },
                             'Carside': { icon: '🚗', color: 'bg-purple-100 text-purple-800' },
