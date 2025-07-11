@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { Coupon } from "@/types/dominos"
 import PasswordProtection from './components/PasswordProtection'
+import StoreFinder from './components/StoreFinder'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -190,6 +191,7 @@ function App() {
           <Card className="flex-1 max-w-sm mx-auto lg:mx-0 shadow-lg border-0">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold">Store Search</CardTitle>
+              <p className="text-sm text-gray-600">Enter store number directly</p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -238,6 +240,11 @@ function App() {
               )}
             </CardContent>
           </Card>
+
+          <StoreFinder onStoreSelect={(selectedStoreId) => {
+            setStoreId(selectedStoreId)
+            localStorage.setItem('lastStoreId', selectedStoreId)
+          }} />
 
           {storeInfo && (
             <Card className="flex-1 max-w-sm mx-auto lg:mx-0 shadow-lg border-0">
