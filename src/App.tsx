@@ -405,26 +405,30 @@ function App() {
 
         {coupons.length > 0 && (
           <>
-            {/* Limited Time Deals Section */}
-            {coupons.some(coupon => 
-              (coupon.TimeRestriction || coupon.ValidHours) || 
-              (coupon.MenuItemHints && coupon.MenuItemHints.some((hint: string) => hint.includes('⏰')))
-            ) && (
+            {/* Limited Time Deals Section - Expiring Today */}
+            {coupons.some(coupon => {
+              if (!coupon.ExpirationDate) return false
+              const today = new Date()
+              const expirationDate = new Date(coupon.ExpirationDate)
+              return today.toDateString() === expirationDate.toDateString()
+            }) && (
               <div className="mb-8">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold text-red-200 mb-2 flex items-center justify-center gap-2">
                     🔥 Freshly Baked Deals 🔥
                   </h2>
                   <p className="text-red-100 text-sm">
-                    ⏰ Limited time offers - grab them while they're hot!
+                    ⏰ Expiring today - grab them while they're hot!
                   </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {coupons
-                    .filter(coupon => 
-                      (coupon.TimeRestriction || coupon.ValidHours) || 
-                      (coupon.MenuItemHints && coupon.MenuItemHints.some((hint: string) => hint.includes('⏰')))
-                    )
+                    .filter(coupon => {
+                      if (!coupon.ExpirationDate) return false
+                      const today = new Date()
+                      const expirationDate = new Date(coupon.ExpirationDate)
+                      return today.toDateString() === expirationDate.toDateString()
+                    })
                     .map((coupon, index) => {
                       const cardId = coupon.Code || coupon.ID || `limited-${index}`
                       const isExpanded = expandedCards.has(cardId)
@@ -499,7 +503,7 @@ function App() {
                                   </span>
                                 )}
                                 <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium shadow-sm">
-                                  🔥 Limited Time
+                                  🔥 Expires Today
                                 </span>
                               </div>
                             </div>
@@ -597,10 +601,12 @@ function App() {
             {/* Regular Coupons Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {coupons
-                .filter(coupon => 
-                  !((coupon.TimeRestriction || coupon.ValidHours) || 
-                    (coupon.MenuItemHints && coupon.MenuItemHints.some((hint: string) => hint.includes('⏰'))))
-                )
+                .filter(coupon => {
+                  if (!coupon.ExpirationDate) return true
+                  const today = new Date()
+                  const expirationDate = new Date(coupon.ExpirationDate)
+                  return today.toDateString() !== expirationDate.toDateString()
+                })
                 .map((coupon, index) => {
               const cardId = coupon.Code || coupon.ID || index.toString()
               const isExpanded = expandedCards.has(cardId)
@@ -667,16 +673,6 @@ function App() {
                         {coupon.MinimumOrder && (
                           <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium shadow-sm">
                             Min Order: ${coupon.MinimumOrder}
-                          </span>
-                        )}
-                        {(coupon.TimeRestriction || coupon.ValidHours) && (
-                          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium shadow-sm">
-                            ⏰ Time Limited
-                          </span>
-                        )}
-                        {coupon.MenuItemHints && coupon.MenuItemHints.some((hint: string) => hint.includes('⏰')) && (
-                          <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium shadow-sm">
-                            🔥 Limited Time
                           </span>
                         )}
                       </div>
