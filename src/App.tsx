@@ -164,17 +164,61 @@ function App() {
             coupon[column] = row[index]
           })
           
-          // Parse expiration date, virtual code, and eligible items from Tags field
+          // Parse expiration date, virtual code, and eligible items from Tags field and direct fields
+          
+          // Extract expiration date - check Tags first, then direct fields
           if (coupon.Tags && typeof coupon.Tags === 'string') {
-            const expiresMatch = coupon.Tags.match(/ExpiresOn=(\d{4}-\d{2}-\d{2})/)
-            if (expiresMatch) {
-              coupon.ExpirationDate = expiresMatch[1]
-            }
+            // Check for various date formats in Tags
+            const expiresOnMatch = coupon.Tags.match(/ExpiresOn=(\d{4}-\d{2}-\d{2})/)
+            const expiresAtMatch = coupon.Tags.match(/ExpiresAt=(\d{2}:\d{2}:\d{2})/)
+            const expireDateMatch = coupon.Tags.match(/ExpireDate=([^,]+)/)
+            const expirationMatch = coupon.Tags.match(/Expiration=([^,]+)/)
             
+            if (expiresOnMatch) {
+              coupon.ExpirationDate = expiresOnMatch[1]
+              // If we also have ExpiresAt, append the time
+              if (expiresAtMatch) {
+                coupon.ExpirationTime = expiresAtMatch[1]
+              }
+            } else if (expireDateMatch) {
+              coupon.ExpirationDate = expireDateMatch[1]
+            } else if (expirationMatch) {
+              coupon.ExpirationDate = expirationMatch[1]
+            }
+          }
+          // Fallback to direct fields if not found in Tags
+          if (!coupon.ExpirationDate && coupon.ExpiresOn) {
+            coupon.ExpirationDate = coupon.ExpiresOn
+          }
+          if (!coupon.ExpirationDate && coupon.ExpireDate) {
+            coupon.ExpirationDate = coupon.ExpireDate
+          }
+          // ExpirationDate could also be set directly from columnar data
+          
+          // Extract virtual code - check Tags first, then direct fields
+          if (coupon.Tags && typeof coupon.Tags === 'string') {
+            // Check for various virtual code patterns in Tags
             const virtualCodeMatch = coupon.Tags.match(/VirtualCode=([^,]+)/)
+            const onlineCodeMatch = coupon.Tags.match(/OnlineCode=([^,]+)/)
+            const webCodeMatch = coupon.Tags.match(/WebCode=([^,]+)/)
+            const codeMatch = coupon.Tags.match(/Code=([^,]+)/)
+            
             if (virtualCodeMatch) {
               coupon.VirtualCode = virtualCodeMatch[1]
+            } else if (onlineCodeMatch) {
+              coupon.VirtualCode = onlineCodeMatch[1]
+            } else if (webCodeMatch) {
+              coupon.VirtualCode = webCodeMatch[1]
+            } else if (codeMatch && !coupon.Code) {
+              // Only use generic Code if we don't already have a main Code
+              coupon.VirtualCode = codeMatch[1]
             }
+          }
+          // Fallback to direct VirtualCode field if not found in Tags
+          // (The direct field would already be set from the columnar data mapping above)
+          
+          // Continue with other Tags processing
+          if (coupon.Tags && typeof coupon.Tags === 'string') {
             
             // Extract eligible product codes and categories
             const productCodesMatch = coupon.Tags.match(/ProductCodes=([^,]+)/)
@@ -197,6 +241,12 @@ function App() {
             const serviceMethodMatch = coupon.Tags.match(/ServiceMethod=([^,]+)/)
             if (serviceMethodMatch) {
               coupon.ServiceMethod = serviceMethodMatch[1]
+            }
+            
+            // Extract valid service methods
+            const validServiceMethodsMatch = coupon.Tags.match(/ValidServiceMethods=([^,]+)/)
+            if (validServiceMethodsMatch) {
+              coupon.ValidServiceMethods = validServiceMethodsMatch[1].split(':')
             }
             
             // Extract time-based restrictions from Tags
@@ -504,6 +554,24 @@ function App() {
                                   🔥 Expires Today
                                 </span>
                               </div>
+                              
+                              {/* Valid Service Methods - Always show if available */}
+                              {coupon.ValidServiceMethods && coupon.ValidServiceMethods.length > 0 && (
+                                <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                                  <h4 className="font-semibold text-sm mb-2 text-green-800">🚗 Available For:</h4>
+                                  <div className="flex flex-wrap gap-2">
+                                    {coupon.ValidServiceMethods.map((method: string, index: number) => (
+                                      <span key={index} className="px-2 py-1 bg-white text-green-700 rounded text-xs font-medium border border-green-200">
+                                        {method === 'Carryout' ? '🏪 Carryout' : 
+                                         method === 'Delivery' ? '🚚 Delivery' :
+                                         method === 'Carside' ? '🚗 Carside' :
+                                         method === 'Hotspot' ? '📍 Hotspot' :
+                                         method}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
 
                             <div className="mt-auto">
@@ -674,6 +742,24 @@ function App() {
                           </span>
                         )}
                       </div>
+                      
+                      {/* Valid Service Methods - Always show if available */}
+                      {coupon.ValidServiceMethods && coupon.ValidServiceMethods.length > 0 && (
+                        <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                          <h4 className="font-semibold text-sm mb-2 text-green-800">🚗 Available For:</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {coupon.ValidServiceMethods.map((method: string, index: number) => (
+                              <span key={index} className="px-2 py-1 bg-white text-green-700 rounded text-xs font-medium border border-green-200">
+                                {method === 'Carryout' ? '🏪 Carryout' : 
+                                 method === 'Delivery' ? '🚚 Delivery' :
+                                 method === 'Carside' ? '🚗 Carside' :
+                                 method === 'Hotspot' ? '📍 Hotspot' :
+                                 method}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                     </div>
 
