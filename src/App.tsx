@@ -408,7 +408,7 @@ function App() {
             {/* Limited Time Deals Section */}
             {coupons.some(coupon => 
               (coupon.TimeRestriction || coupon.ValidHours) || 
-              (coupon.MenuItemHints && coupon.MenuItemHints.some(hint => hint.includes('⏰')))
+              (coupon.MenuItemHints && coupon.MenuItemHints.some((hint: string) => hint.includes('⏰')))
             ) && (
               <div className="mb-8">
                 <div className="text-center mb-6">
@@ -423,7 +423,7 @@ function App() {
                   {coupons
                     .filter(coupon => 
                       (coupon.TimeRestriction || coupon.ValidHours) || 
-                      (coupon.MenuItemHints && coupon.MenuItemHints.some(hint => hint.includes('⏰')))
+                      (coupon.MenuItemHints && coupon.MenuItemHints.some((hint: string) => hint.includes('⏰')))
                     )
                     .map((coupon, index) => {
                       const cardId = coupon.Code || coupon.ID || `limited-${index}`
@@ -599,7 +599,7 @@ function App() {
               {coupons
                 .filter(coupon => 
                   !((coupon.TimeRestriction || coupon.ValidHours) || 
-                    (coupon.MenuItemHints && coupon.MenuItemHints.some(hint => hint.includes('⏰'))))
+                    (coupon.MenuItemHints && coupon.MenuItemHints.some((hint: string) => hint.includes('⏰'))))
                 )
                 .map((coupon, index) => {
               const cardId = coupon.Code || coupon.ID || index.toString()
@@ -674,7 +674,7 @@ function App() {
                             ⏰ Time Limited
                           </span>
                         )}
-                        {coupon.MenuItemHints && coupon.MenuItemHints.some(hint => hint.includes('⏰')) && (
+                        {coupon.MenuItemHints && coupon.MenuItemHints.some((hint: string) => hint.includes('⏰')) && (
                           <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium shadow-sm">
                             🔥 Limited Time
                           </span>
