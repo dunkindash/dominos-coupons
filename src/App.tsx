@@ -650,6 +650,17 @@ function App() {
                   const expirationDate = new Date(coupon.ExpirationDate)
                   return today.toDateString() !== expirationDate.toDateString()
                 })
+                .sort((a, b) => {
+                  // Sort coupons with virtual codes to the top
+                  const aHasVirtualCode = a.VirtualCode && a.VirtualCode.trim() !== ''
+                  const bHasVirtualCode = b.VirtualCode && b.VirtualCode.trim() !== ''
+                  
+                  if (aHasVirtualCode && !bHasVirtualCode) return -1
+                  if (!aHasVirtualCode && bHasVirtualCode) return 1
+                  
+                  // If both have or don't have virtual codes, maintain original order
+                  return 0
+                })
                 .map((coupon, index) => {
               const cardId = coupon.Code || coupon.ID || index.toString()
               const isExpanded = expandedCards.has(cardId)
