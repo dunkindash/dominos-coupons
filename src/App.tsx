@@ -11,19 +11,18 @@ function extractMenuItemHints(description: string): string[] {
   const hints: string[] = []
   const lowerDesc = description.toLowerCase()
   
-  // Common menu item keywords
+  // Common menu item keywords (order matters - more specific first)
   const menuItems = [
-    'pizza', 'large pizza', 'medium pizza', 'small pizza',
-    'wings', 'boneless wings', 'traditional wings',
-    'pasta', 'sandwich', 'sandwiches',
-    'breadsticks', 'bread', 'cheesy bread',
-    'soda', 'drink', 'beverages',
-    'dessert', 'cookie', 'brownies',
-    'salad', 'sides',
-    'specialty pizza', 'hand tossed', 'thin crust', 'pan pizza',
-    'pepperoni', 'cheese pizza', 'supreme',
-    'chicken', 'beef', 'italian sausage',
-    'delivery', 'carryout', 'pickup'
+    'large pizza', 'medium pizza', 'small pizza',
+    'specialty pizza', 'cheese pizza', 'pepperoni pizza',
+    'hand tossed', 'thin crust', 'pan pizza',
+    'boneless wings', 'traditional wings',
+    'cheesy bread', 'bread',
+    'pizza', 'wings', 'pasta', 'sandwich', 'sandwiches',
+    'breadsticks', 'soda', 'drink', 'beverages',
+    'dessert', 'cookie', 'brownies', 'salad', 'sides',
+    'supreme', 'pepperoni', 'chicken', 'beef', 'italian sausage',
+    'delivery', 'carryout', 'pickup', 'topping', 'toppings'
   ]
   
   menuItems.forEach(item => {
@@ -187,9 +186,10 @@ function App() {
             }
           }
           
-          // Analyze coupon description for menu item hints
-          if (coupon.Description) {
-            coupon.MenuItemHints = extractMenuItemHints(coupon.Description)
+          // Analyze coupon name and description for menu item hints
+          const textToAnalyze = [coupon.Name, coupon.Description].filter(Boolean).join(' ')
+          if (textToAnalyze) {
+            coupon.MenuItemHints = extractMenuItemHints(textToAnalyze)
           }
           
           return coupon
