@@ -95,7 +95,9 @@ function App() {
         businessDate: data.BusinessDate,
         market: data.Market,
         storeAsOfTime: data.StoreAsOfTime,
-        status: data.Status
+        status: data.Status,
+        languageCode: data.LanguageCode,
+        validServiceMethods: data.ValidServiceMethods
       })
       
       // Extract coupons from the structured response
@@ -294,7 +296,7 @@ function App() {
                     <span className="font-medium text-gray-600">Business Date:</span>
                     <span className="font-semibold">{storeInfo.businessDate}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2">
+                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="font-medium text-gray-600">Status:</span>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                       storeInfo.status === 0 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
@@ -302,6 +304,28 @@ function App() {
                       {storeInfo.status === 0 ? 'Active' : 'Inactive'}
                     </span>
                   </div>
+                  {storeInfo.validServiceMethods && (
+                    <div className="py-2">
+                      <span className="font-medium text-gray-600 block mb-2">Available Services:</span>
+                      <div className="flex flex-wrap gap-2">
+                        {storeInfo.validServiceMethods.includes('Delivery') && (
+                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                            🚚 Delivery
+                          </span>
+                        )}
+                        {storeInfo.validServiceMethods.includes('Carryout') && (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                            🏪 Carryout
+                          </span>
+                        )}
+                        {storeInfo.validServiceMethods.includes('DriveUpCarryout') && (
+                          <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+                            🚗 Drive-Up
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
