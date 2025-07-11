@@ -241,10 +241,22 @@ function App() {
             </CardContent>
           </Card>
 
-          <StoreFinder onStoreSelect={(selectedStoreId) => {
-            setStoreId(selectedStoreId)
-            localStorage.setItem('lastStoreId', selectedStoreId)
-          }} />
+          <StoreFinder 
+            onStoreSelect={(selectedStoreId) => {
+              setStoreId(selectedStoreId)
+              localStorage.setItem('lastStoreId', selectedStoreId)
+            }}
+            onRateLimitUpdate={(newRequestCount, newFirstRequestTime) => {
+              setRequestCount(newRequestCount)
+              setFirstRequestTime(newFirstRequestTime)
+              
+              // Store in localStorage for persistence
+              localStorage.setItem('rateLimit', JSON.stringify({
+                requestCount: newRequestCount,
+                firstRequestTime: newFirstRequestTime
+              }))
+            }}
+          />
 
           {storeInfo && (
             <Card className="flex-1 max-w-sm mx-auto lg:mx-0 shadow-lg border-0">

@@ -14,19 +14,23 @@ interface Store {
 
 interface StoreFinderProps {
   onStoreSelect: (storeId: string) => void
+  onRateLimitUpdate?: (requestCount: number, firstRequestTime: number | null) => void
 }
 
-export default function StoreFinder({ onStoreSelect }: StoreFinderProps) {
-  const [zipCode, setZipCode] = useState('')
+export default function StoreFinder({ onStoreSelect, onRateLimitUpdate }: StoreFinderProps) {
+  const [address, setAddress] = useState('')
   const [stores, setStores] = useState<Store[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [hasSearched, setHasSearched] = useState(false)
 
   const findStores = async () => {
-    if (!zipCode.trim()) return
+    if (!address.trim()) return
     
     setLoading(true)
     setError('')
+    setHasSearched(true)
+    setStores([])
     
     try {
       const authToken = sessionStorage.getItem('authToken')
@@ -36,8 +40,28 @@ export default function StoreFinder({ onStoreSelect }: StoreFinderProps) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ zipCode: zipCode.trim() })
+        body: JSON.stringify({ address: address.trim() })
       })
+
+      // Update rate limit info from response headers
+      const remaining = parseInt(response.headers.get('X-RateLimit-Remaining') || '5')
+      const limit = parseInt(response.headers.get('X-RateLimit-Limit') || '5')
+      const resetTime = response.headers.get('X-RateLimit-Reset')
+      
+      const newRequestCount = limit - remaining
+      const newFirstRequestTime = resetTime && remaining < limit ? 
+        new Date(resetTime).getTime() - (10 * 60 * 1000) : null
+      
+      // Call the callback to update parent component's rate limit state
+      if (onRateLimitUpdate) {
+        onRateLimitUpdate(newRequestCount, newFirstRequestTime)
+      }
+
+      if (response.status === 429) {
+        const errorData = await response.json()
+        setError(errorData.message || 'Rate limit exceeded')
+        return
+      }
 
       if (response.status === 401) {
         setError('Session expired. Please refresh the page.')
@@ -72,15 +96,14 @@ export default function StoreFinder({ onStoreSelect }: StoreFinderProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             type="text"
-            placeholder="Enter zip code (e.g., 90210)"
-            value={zipCode}
-            onChange={(e) => setZipCode(e.target.value)}
+            placeholder="Enter address (e.g., 123 Main St, City, State 12345)"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
             className="w-full"
-            maxLength={10}
           />
           <Button 
             type="submit" 
-            disabled={loading || !zipCode.trim()}
+            disabled={loading || !address.trim()}
             className="w-full !bg-blue-600 hover:!bg-blue-700 !text-white"
           >
             {loading ? 'Finding Stores...' : 'Find Stores'}
@@ -90,6 +113,26 @@ export default function StoreFinder({ onStoreSelect }: StoreFinderProps) {
         {error && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
             <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+
+        {loading && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <p className="text-blue-600 text-sm">Finding nearby stores...</p>
+            </div>
+          </div>
+        )}
+
+        {hasSearched && !loading && stores.length === 0 && !error && (
+          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+            <div className="text-center">
+              <p className="text-gray-600 text-sm">No nearby stores found</p>
+              <p className="text-gray-500 text-xs mt-1">
+                Try entering a different address or check if the area is served by Domino's
+              </p>
+            </div>
           </div>
         )}
 
