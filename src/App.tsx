@@ -418,13 +418,7 @@ function App() {
           </div>
         )}
 
-        {coupons.length === 0 && storeId && !loading && !error && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No coupons found for this store.</p>
-          </div>
-        )}
-
-        {coupons.length === 0 && !storeId && !loading && (
+        {coupons.length === 0 && !loading && !error && (
           <div className="text-center py-16">
             <div className="mb-8">
               <div className="text-8xl mb-4">🍕</div>
