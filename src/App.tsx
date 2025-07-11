@@ -454,7 +454,7 @@ function App() {
                         <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
                           <h4 className="font-semibold text-sm mb-2 text-green-800">🍕 What's Included:</h4>
                           <div className="flex flex-wrap gap-1">
-                            {coupon.MenuItemHints.map((hint, index) => (
+                            {coupon.MenuItemHints.map((hint: string, index: number) => (
                               <span key={index} className="px-2 py-1 bg-white text-green-700 rounded text-xs font-medium border border-green-200">
                                 {hint}
                               </span>
