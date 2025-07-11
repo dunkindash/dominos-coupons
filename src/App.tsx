@@ -90,15 +90,13 @@ function App() {
       // Rate limit info is now handled above from response headers
       
       // Extract store information
-      console.log('ValidServiceMethods from API:', data.ValidServiceMethods)
       setStoreInfo({
         storeId: data.StoreID,
         businessDate: data.BusinessDate,
         market: data.Market,
         storeAsOfTime: data.StoreAsOfTime,
         status: data.Status,
-        languageCode: data.LanguageCode,
-        validServiceMethods: data.ValidServiceMethods
+        languageCode: data.LanguageCode
       })
       
       // Extract coupons from the structured response
@@ -297,7 +295,7 @@ function App() {
                     <span className="font-medium text-gray-600">Business Date:</span>
                     <span className="font-semibold">{storeInfo.businessDate}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <div className="flex justify-between items-center py-2">
                     <span className="font-medium text-gray-600">Status:</span>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                       storeInfo.status === 0 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
@@ -305,30 +303,6 @@ function App() {
                       {storeInfo.status === 0 ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  {storeInfo.validServiceMethods && (
-                    <div className="py-2">
-                      <span className="font-medium text-gray-600 block mb-2">Available Services:</span>
-                      <div className="flex flex-wrap gap-2">
-                        {storeInfo.validServiceMethods.split(':').map((service: string) => {
-                          const trimmedService = service.trim()
-                          const serviceConfig: Record<string, { icon: string; color: string }> = {
-                            'Delivery': { icon: '🚚', color: 'bg-green-100 text-green-800' },
-                            'Carryout': { icon: '🏪', color: 'bg-blue-100 text-blue-800' },
-                            'Carside': { icon: '🚗', color: 'bg-purple-100 text-purple-800' },
-                            'Hotspot': { icon: '📍', color: 'bg-orange-100 text-orange-800' }
-                          }
-                          
-                          const config = serviceConfig[trimmedService] || { icon: '🔹', color: 'bg-gray-100 text-gray-800' }
-                          
-                          return (
-                            <span key={trimmedService} className={`px-2 py-1 rounded text-xs font-medium ${config.color}`}>
-                              {config.icon} {trimmedService}
-                            </span>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
