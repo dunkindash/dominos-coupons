@@ -450,6 +450,21 @@ function App() {
                         )}
                       </div>
 
+                      {coupon.PriceInfo && (
+                        <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded-md">
+                          {coupon.PriceInfo}
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded-md">
+                        <span className="font-medium">Sort: {coupon.SortSeq}</span>
+                        {coupon.GroupCodes && (
+                          <span className="font-medium">Groups: {coupon.GroupCodes}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-auto">
                       {coupon.MenuItemHints && coupon.MenuItemHints.length > 0 && (
                         <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
                           <h4 className="font-semibold text-sm mb-2 text-green-800">🍕 What's Included:</h4>
@@ -481,21 +496,6 @@ function App() {
                         </div>
                       )}
 
-                      {coupon.PriceInfo && (
-                        <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded-md">
-                          {coupon.PriceInfo}
-                        </div>
-                      )}
-
-                      <div className="flex justify-between items-center text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded-md">
-                        <span className="font-medium">Sort: {coupon.SortSeq}</span>
-                        {coupon.GroupCodes && (
-                          <span className="font-medium">Groups: {coupon.GroupCodes}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="mt-auto">
                       <Button
                         size="sm"
                         onClick={() => toggleCardExpansion(cardId)}
