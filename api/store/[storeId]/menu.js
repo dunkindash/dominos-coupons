@@ -31,11 +31,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { storeId } = req.query
+  const { storeId, lang } = req.query
   
   if (!storeId || typeof storeId !== 'string') {
     return res.status(400).json({ error: 'Store ID is required' })
   }
+
+  // Default to English if no language specified
+  const language = lang || 'en'
 
   // Check authentication
   const authToken = req.headers.authorization?.replace('Bearer ', '')
@@ -93,14 +96,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fetch from Domino's API
+    // Fetch from Domino's API with specified language
     const dominosResponse = await fetch(
-      `https://order.dominos.com/power/store/${storeId}/menu?lang=en`,
+      `https://order.dominos.com/power/store/${storeId}/menu?lang=${language}`,
       {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           'Accept': 'application/json',
-          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Language': language === 'es' ? 'es-ES,es;q=0.9' : 'en-US,en;q=0.9',
           'Cache-Control': 'no-cache',
         }
       }

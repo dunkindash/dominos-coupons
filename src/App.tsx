@@ -13,6 +13,9 @@ function App() {
   const [storeId, setStoreId] = useState(() => {
     return localStorage.getItem('lastStoreId') || ''
   })
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem('selectedLanguage') || 'en'
+  })
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -38,8 +41,8 @@ function App() {
     try {
       // Use Vercel API in production, local proxy in development
       const apiUrl = import.meta.env.PROD 
-        ? `/api/store/${storeId}/menu`
-        : `/api/power/store/${storeId}/menu?lang=en`
+        ? `/api/store/${storeId}/menu?lang=${language}`
+        : `/api/power/store/${storeId}/menu?lang=${language}`
         
       const authToken = sessionStorage.getItem('authToken')
       const response = await fetch(apiUrl, {
@@ -196,6 +199,20 @@ function App() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Language</label>
+                    <select
+                      value={language}
+                      onChange={(e) => {
+                        setLanguage(e.target.value)
+                        localStorage.setItem('selectedLanguage', e.target.value)
+                      }}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="en">English</option>
+                      <option value="es">Español</option>
+                    </select>
+                  </div>
                   <Input
                     type="text"
                     placeholder="Enter store number (e.g., 7046)"
