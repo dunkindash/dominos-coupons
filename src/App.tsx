@@ -555,6 +555,9 @@ function App() {
                                 </span>
                               </div>
                               
+                            </div>
+
+                            <div className="mt-auto">
                               {/* Valid Service Methods - Always show if available */}
                               {coupon.ValidServiceMethods && coupon.ValidServiceMethods.length > 0 && (
                                 <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
@@ -572,32 +575,6 @@ function App() {
                                   </div>
                                 </div>
                               )}
-                            </div>
-
-                            <div className="mt-auto">
-                              {/* Key coupon details */}
-                              <div className="mb-4 space-y-2">
-                                {(coupon.Value || coupon.Type) && (
-                                  <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
-                                    {coupon.Value && <span className="font-medium">Value={coupon.Value}</span>}
-                                    {coupon.Value && coupon.Type && <span>,</span>}
-                                    {coupon.Type && <span className="font-medium">Type={coupon.Type}</span>}
-                                  </div>
-                                )}
-                                
-                                <div className="flex justify-between items-center text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
-                                  <span className="font-medium">Sort: {coupon.SortSeq}</span>
-                                  {coupon.GroupCodes && (
-                                    <span className="font-medium">Groups: {coupon.GroupCodes}</span>
-                                  )}
-                                </div>
-                                
-                                {coupon.PriceInfo && (
-                                  <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
-                                    {coupon.PriceInfo}
-                                  </div>
-                                )}
-                              </div>
 
                               {coupon.MenuItemHints && coupon.MenuItemHints.length > 0 && (
                                 <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
@@ -743,6 +720,9 @@ function App() {
                         )}
                       </div>
                       
+                    </div>
+
+                    <div className="mt-auto">
                       {/* Valid Service Methods - Always show if available */}
                       {coupon.ValidServiceMethods && coupon.ValidServiceMethods.length > 0 && (
                         <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
@@ -760,33 +740,6 @@ function App() {
                           </div>
                         </div>
                       )}
-
-                    </div>
-
-                    <div className="mt-auto">
-                      {/* Always show key coupon details in consistent position */}
-                      <div className="mb-4 space-y-2">
-                        {(coupon.Value || coupon.Type) && (
-                          <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
-                            {coupon.Value && <span className="font-medium">Value={coupon.Value}</span>}
-                            {coupon.Value && coupon.Type && <span>,</span>}
-                            {coupon.Type && <span className="font-medium">Type={coupon.Type}</span>}
-                          </div>
-                        )}
-                        
-                        <div className="flex justify-between items-center text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
-                          <span className="font-medium">Sort: {coupon.SortSeq}</span>
-                          {coupon.GroupCodes && (
-                            <span className="font-medium">Groups: {coupon.GroupCodes}</span>
-                          )}
-                        </div>
-                        
-                        {coupon.PriceInfo && (
-                          <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded-md">
-                            {coupon.PriceInfo}
-                          </div>
-                        )}
-                      </div>
 
                       {coupon.MenuItemHints && coupon.MenuItemHints.length > 0 && (
                         <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
