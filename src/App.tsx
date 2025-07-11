@@ -90,6 +90,7 @@ function App() {
       // Rate limit info is now handled above from response headers
       
       // Extract store information
+      console.log('ValidServiceMethods from API:', data.ValidServiceMethods)
       setStoreInfo({
         storeId: data.StoreID,
         businessDate: data.BusinessDate,
@@ -308,21 +309,23 @@ function App() {
                     <div className="py-2">
                       <span className="font-medium text-gray-600 block mb-2">Available Services:</span>
                       <div className="flex flex-wrap gap-2">
-                        {storeInfo.validServiceMethods.includes('Delivery') && (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                            🚚 Delivery
-                          </span>
-                        )}
-                        {storeInfo.validServiceMethods.includes('Carryout') && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
-                            🏪 Carryout
-                          </span>
-                        )}
-                        {storeInfo.validServiceMethods.includes('DriveUpCarryout') && (
-                          <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
-                            🚗 Drive-Up
-                          </span>
-                        )}
+                        {storeInfo.validServiceMethods.split(':').map((service) => {
+                          const trimmedService = service.trim()
+                          const serviceConfig = {
+                            'Delivery': { icon: '🚚', color: 'bg-green-100 text-green-800' },
+                            'Carryout': { icon: '🏪', color: 'bg-blue-100 text-blue-800' },
+                            'Carside': { icon: '🚗', color: 'bg-purple-100 text-purple-800' },
+                            'Hotspot': { icon: '📍', color: 'bg-orange-100 text-orange-800' }
+                          }
+                          
+                          const config = serviceConfig[trimmedService] || { icon: '🔹', color: 'bg-gray-100 text-gray-800' }
+                          
+                          return (
+                            <span key={trimmedService} className={`px-2 py-1 rounded text-xs font-medium ${config.color}`}>
+                              {config.icon} {trimmedService}
+                            </span>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
