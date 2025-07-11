@@ -6,6 +6,47 @@ import type { Coupon } from "@/types/dominos"
 import PasswordProtection from './components/PasswordProtection'
 import StoreFinder from './components/StoreFinder'
 
+// Helper function to extract menu item hints from coupon descriptions
+function extractMenuItemHints(description: string): string[] {
+  const hints: string[] = []
+  const lowerDesc = description.toLowerCase()
+  
+  // Common menu item keywords
+  const menuItems = [
+    'pizza', 'large pizza', 'medium pizza', 'small pizza',
+    'wings', 'boneless wings', 'traditional wings',
+    'pasta', 'sandwich', 'sandwiches',
+    'breadsticks', 'bread', 'cheesy bread',
+    'soda', 'drink', 'beverages',
+    'dessert', 'cookie', 'brownies',
+    'salad', 'sides',
+    'specialty pizza', 'hand tossed', 'thin crust', 'pan pizza',
+    'pepperoni', 'cheese pizza', 'supreme',
+    'chicken', 'beef', 'italian sausage',
+    'delivery', 'carryout', 'pickup'
+  ]
+  
+  menuItems.forEach(item => {
+    if (lowerDesc.includes(item)) {
+      hints.push(item)
+    }
+  })
+  
+  // Extract specific pricing mentions
+  const priceMatches = description.match(/\$\d+\.?\d*/g)
+  if (priceMatches) {
+    hints.push(...priceMatches.map(price => `Price: ${price}`))
+  }
+  
+  // Extract quantity mentions
+  const quantityMatches = description.match(/\b(\d+)\s*(piece|pc|order|item)/gi)
+  if (quantityMatches) {
+    hints.push(...quantityMatches.map(qty => `Quantity: ${qty}`))
+  }
+  
+  return [...new Set(hints)] // Remove duplicates
+}
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('authToken') !== null
@@ -110,7 +151,7 @@ function App() {
             coupon[column] = row[index]
           })
           
-          // Parse expiration date and virtual code from Tags field
+          // Parse expiration date, virtual code, and eligible items from Tags field
           if (coupon.Tags && typeof coupon.Tags === 'string') {
             const expiresMatch = coupon.Tags.match(/ExpiresOn=(\d{4}-\d{2}-\d{2})/)
             if (expiresMatch) {
@@ -121,6 +162,34 @@ function App() {
             if (virtualCodeMatch) {
               coupon.VirtualCode = virtualCodeMatch[1]
             }
+            
+            // Extract eligible product codes and categories
+            const productCodesMatch = coupon.Tags.match(/ProductCodes=([^,]+)/)
+            if (productCodesMatch) {
+              coupon.EligibleProducts = productCodesMatch[1].split(':')
+            }
+            
+            const categoryCodesMatch = coupon.Tags.match(/CategoryCodes=([^,]+)/)
+            if (categoryCodesMatch) {
+              coupon.EligibleCategories = categoryCodesMatch[1].split(':')
+            }
+            
+            // Extract minimum order requirements
+            const minOrderMatch = coupon.Tags.match(/MinOrder=([^,]+)/)
+            if (minOrderMatch) {
+              coupon.MinimumOrder = minOrderMatch[1]
+            }
+            
+            // Extract service method restrictions
+            const serviceMethodMatch = coupon.Tags.match(/ServiceMethod=([^,]+)/)
+            if (serviceMethodMatch) {
+              coupon.ServiceMethod = serviceMethodMatch[1]
+            }
+          }
+          
+          // Analyze coupon description for menu item hints
+          if (coupon.Description) {
+            coupon.MenuItemHints = extractMenuItemHints(coupon.Description)
           }
           
           return coupon
@@ -369,7 +438,48 @@ function App() {
                             Bundle Deal
                           </span>
                         )}
+                        {coupon.ServiceMethod && (
+                          <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium shadow-sm">
+                            {coupon.ServiceMethod} Only
+                          </span>
+                        )}
+                        {coupon.MinimumOrder && (
+                          <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium shadow-sm">
+                            Min Order: ${coupon.MinimumOrder}
+                          </span>
+                        )}
                       </div>
+
+                      {coupon.MenuItemHints && coupon.MenuItemHints.length > 0 && (
+                        <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                          <h4 className="font-semibold text-sm mb-2 text-green-800">🍕 What's Included:</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {coupon.MenuItemHints.map((hint, index) => (
+                              <span key={index} className="px-2 py-1 bg-white text-green-700 rounded text-xs font-medium border border-green-200">
+                                {hint}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {(coupon.EligibleProducts || coupon.EligibleCategories) && (
+                        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <h4 className="font-semibold text-sm mb-2 text-blue-800">📋 Eligible Items:</h4>
+                          {coupon.EligibleCategories && (
+                            <div className="mb-2">
+                              <span className="text-xs font-medium text-blue-600">Categories: </span>
+                              <span className="text-xs text-blue-700">{coupon.EligibleCategories.join(', ')}</span>
+                            </div>
+                          )}
+                          {coupon.EligibleProducts && (
+                            <div>
+                              <span className="text-xs font-medium text-blue-600">Products: </span>
+                              <span className="text-xs text-blue-700">{coupon.EligibleProducts.join(', ')}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {coupon.PriceInfo && (
                         <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded-md">
