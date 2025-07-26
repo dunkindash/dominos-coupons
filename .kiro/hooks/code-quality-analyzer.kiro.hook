@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "name": "Code Quality Analyzer",
+  "description": "Monitors source code files for changes and provides automated code quality analysis including code smells, design patterns, best practices, readability, maintainability, and performance optimization suggestions.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.tsx",
+      "src/**/*.ts",
+      "src/**/*.js",
+      "api/**/*.js",
+      "*.ts",
+      "*.js",
+      "*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze the modified code files for potential improvements. Focus on:\n\n1. **Code Smells**: Identify any code smells like long functions, duplicate code, large classes, or complex conditionals\n2. **Design Patterns**: Suggest appropriate design patterns that could improve the code structure\n3. **Best Practices**: Check adherence to React, TypeScript, and JavaScript best practices\n4. **Readability**: Suggest improvements for variable naming, function structure, and code organization\n5. **Maintainability**: Identify areas that could be refactored for easier maintenance\n6. **Performance**: Suggest optimizations for React components, API calls, and general performance\n7. **Type Safety**: For TypeScript files, suggest improvements to type definitions and usage\n8. **React Specific**: Check for proper hook usage, component structure, and React patterns\n\nProvide specific, actionable suggestions while maintaining the existing functionality. Consider the project context: a React/TypeScript Domino's coupon finder app using Vite, Tailwind CSS, and Vercel serverless functions."
+  }
+}
