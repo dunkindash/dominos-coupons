@@ -826,10 +826,10 @@ function App() {
             })}
             </div>
 
-            {/* Floating Email Coupons Button */}
-            <div className="sticky bottom-4 mt-8 z-50">
+            {/* Sticky Email Coupons Button */}
+            <div className="sticky bottom-4 mt-8 z-40">
               <div className="flex justify-center px-4">
-                <div className="max-w-sm w-full bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-2xl border border-gray-200">
+                <div className="max-w-sm w-full">
                   <EmailCouponsButton
                     coupons={coupons}
                     onClick={handleEmailButtonClick}
