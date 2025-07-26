@@ -32,11 +32,11 @@ export default function EmailCouponsButton({
       className={cn(
         "w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white border-0",
         "transition-all duration-200 font-semibold shadow-lg hover:shadow-xl",
-        "disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none",
+        "disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none disabled:opacity-60",
         "focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:ring-offset-2",
         "touch-manipulation min-h-[48px] sm:min-h-[44px]",
         "transform hover:scale-[1.02] active:scale-[0.98]",
-        !isDisabled && "ring-2 ring-red-500/20",
+        !isDisabled && "ring-1 ring-red-500/30 ring-offset-1",
         className
       )}
       aria-label={loading ? "Sending coupons via email" : `Email ${couponCount} coupons`}

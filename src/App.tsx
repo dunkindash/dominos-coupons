@@ -466,16 +466,6 @@ function App() {
 
         {coupons.length > 0 && (
           <>
-            {/* Email Coupons Button - Top */}
-            <div className="mb-6 flex justify-center">
-              <div className="max-w-sm w-full">
-                <EmailCouponsButton
-                  coupons={coupons}
-                  onClick={handleEmailButtonClick}
-                />
-              </div>
-            </div>
-
             {/* Late Night Deals Section */}
             {coupons.some(coupon => {
               const text = [coupon.Name, coupon.Description].filter(Boolean).join(' ').toLowerCase()
@@ -836,10 +826,10 @@ function App() {
             })}
             </div>
 
-            {/* Sticky Email Coupons Button */}
-            <div className="sticky bottom-4 mt-8 z-40">
+            {/* Floating Email Coupons Button */}
+            <div className="sticky bottom-4 mt-8 z-50">
               <div className="flex justify-center px-4">
-                <div className="max-w-sm w-full">
+                <div className="max-w-sm w-full bg-white/95 backdrop-blur-sm rounded-lg p-2 shadow-2xl border border-gray-200">
                   <EmailCouponsButton
                     coupons={coupons}
                     onClick={handleEmailButtonClick}
