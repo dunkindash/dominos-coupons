@@ -148,7 +148,7 @@ function App() {
       
       // Extract store information
       setStoreInfo({
-        storeId: data.StoreID,
+        StoreID: data.StoreID,
         businessDate: data.BusinessDate,
         market: data.Market,
         storeAsOfTime: data.StoreAsOfTime,
@@ -440,7 +440,7 @@ function App() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="font-medium text-gray-600">Store ID:</span>
-                    <span className="font-semibold">{storeInfo.storeId}</span>
+                    <span className="font-semibold">{storeInfo.StoreID}</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="font-medium text-gray-600">Market:</span>
@@ -466,6 +466,16 @@ function App() {
 
         {coupons.length > 0 && (
           <>
+            {/* Email Coupons Button - Top */}
+            <div className="mb-6 flex justify-center">
+              <div className="max-w-sm w-full">
+                <EmailCouponsButton
+                  coupons={coupons}
+                  onClick={handleEmailButtonClick}
+                />
+              </div>
+            </div>
+
             {/* Late Night Deals Section */}
             {coupons.some(coupon => {
               const text = [coupon.Name, coupon.Description].filter(Boolean).join(' ').toLowerCase()
@@ -826,13 +836,15 @@ function App() {
             })}
             </div>
 
-            {/* Email Coupons Button */}
-            <div className="mt-8 flex justify-center">
-              <div className="max-w-sm w-full">
-                <EmailCouponsButton
-                  coupons={coupons}
-                  onClick={handleEmailButtonClick}
-                />
+            {/* Sticky Email Coupons Button */}
+            <div className="sticky bottom-4 mt-8 z-40">
+              <div className="flex justify-center px-4">
+                <div className="max-w-sm w-full">
+                  <EmailCouponsButton
+                    coupons={coupons}
+                    onClick={handleEmailButtonClick}
+                  />
+                </div>
               </div>
             </div>
           </>
