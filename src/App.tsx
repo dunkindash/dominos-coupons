@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import type { Coupon } from "@/types/dominos"
 import PasswordProtection from './components/PasswordProtection'
 import StoreFinder from './components/StoreFinder'
+import EmailCouponsButton from './components/EmailCouponsButton'
+import EmailModal from './components/EmailModal'
 
 // Helper function to extract menu item hints from coupon descriptions
 function extractMenuItemHints(description: string): string[] {
@@ -84,6 +86,7 @@ function App() {
     return stored ? JSON.parse(stored).firstRequestTime : null
   })
   const [, setTick] = useState(0) // Force re-render for timer
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
 
 
   const fetchCoupons = async () => {
@@ -297,6 +300,14 @@ function App() {
       }
       return newSet
     })
+  }
+
+  const handleEmailButtonClick = () => {
+    setIsEmailModalOpen(true)
+  }
+
+  const handleEmailModalClose = () => {
+    setIsEmailModalOpen(false)
   }
 
   // Update timer every second
@@ -814,6 +825,16 @@ function App() {
               )
             })}
             </div>
+
+            {/* Email Coupons Button */}
+            <div className="mt-8 flex justify-center">
+              <div className="max-w-sm w-full">
+                <EmailCouponsButton
+                  coupons={coupons}
+                  onClick={handleEmailButtonClick}
+                />
+              </div>
+            </div>
           </>
         )}
 
@@ -842,6 +863,14 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Email Modal */}
+      <EmailModal
+        isOpen={isEmailModalOpen}
+        onClose={handleEmailModalClose}
+        coupons={coupons}
+        storeInfo={storeInfo}
+      />
     </div>
   )
 }

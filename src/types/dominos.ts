@@ -24,3 +24,45 @@ export interface CouponsResponse {
 export interface DominosMenu {
   Coupons: CouponsResponse;
 }
+
+export interface StoreInfo {
+  StoreID: string | number
+  AddressDescription?: string
+  BusinessDate?: string
+  Phone?: string
+  MarketName?: string
+  IsOpen?: boolean
+  IsOnlineCapable?: boolean
+  IsDeliveryStore?: boolean
+  StoreCoordinates?: {
+    Description?: string
+    [key: string]: any
+  }
+  ServiceHours?: {
+    Delivery?: Record<string, string>
+    [key: string]: any
+  }
+  [key: string]: any
+}
+
+export interface EmailRequest {
+  email: string
+  coupons: Coupon[]
+  storeInfo: StoreInfo
+}
+
+export interface EmailResponse {
+  success: boolean
+  message: string
+  emailId?: string
+  error?: string
+  _meta?: {
+    requestsRemaining: number
+    resetTime: number
+  }
+}
+
+export interface RateLimitInfo {
+  requestCount: number
+  firstRequestTime: number | null
+}
