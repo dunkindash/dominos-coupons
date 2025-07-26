@@ -29,6 +29,7 @@ export default function EmailModal({
     updateSelectedCoupons,
     handleEmailBlur,
     handleSubmit,
+    retrySubmit,
     resetForm
   } = useEmailModal()
 
@@ -63,15 +64,15 @@ export default function EmailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={handleOverlayClick}
       onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="email-modal-title"
     >
-      <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <CardHeader>
+      <Card className="w-full sm:max-w-md max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col rounded-b-none sm:rounded-b-lg animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
+        <CardHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <CardTitle id="email-modal-title" className="text-lg font-semibold">
               Email Coupons
@@ -80,7 +81,7 @@ export default function EmailModal({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="h-8 w-8 rounded-full"
+              className="h-8 w-8 sm:h-8 sm:w-8 -mr-2 rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Close modal"
             >
               <svg
@@ -106,37 +107,45 @@ export default function EmailModal({
           )}
         </CardHeader>
 
-        <form onSubmit={handleFormSubmit}>
-          <CardContent className="space-y-4">
+        <form onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <CardContent className="space-y-4 flex-1 overflow-y-auto px-4 sm:px-6">
             {/* Success Message */}
             {uiState.successMessage && (
-              <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="h-4 w-4 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <p className="text-sm text-green-800">{uiState.successMessage}</p>
+              <div className="p-4 rounded-lg bg-green-50 border border-green-200" role="status" aria-live="polite">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg
+                      className="h-5 w-5 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-green-800">Email sent successfully!</h4>
+                    <p className="text-sm text-green-700 mt-1">{uiState.successMessage}</p>
+                    <p className="text-xs text-green-600 mt-2">
+                      Check your inbox in a few moments. If you don't see the email, please check your spam folder.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* Submit Error Message */}
             {errors.submit && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
-                <div className="flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200" role="alert">
+                <div className="flex items-start gap-2">
                   <svg
-                    className="h-4 w-4 text-red-600"
+                    className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -149,7 +158,24 @@ export default function EmailModal({
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-sm text-red-800">{errors.submit}</p>
+                  <div className="flex-1">
+                    <p className="text-sm text-red-800">{errors.submit}</p>
+                    {errors.submit.includes('rate limit') && (
+                      <p className="text-xs text-red-600 mt-1">
+                        Try again later or contact support if this persists.
+                      </p>
+                    )}
+                    {!errors.submit.includes('rate limit') && !errors.submit.includes('Invalid') && (
+                      <button
+                        type="button"
+                        onClick={() => retrySubmit(coupons, storeInfo, onClose)}
+                        className="mt-2 text-xs text-red-700 hover:text-red-900 underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded"
+                        disabled={formState.isSubmitting}
+                      >
+                        {uiState.isRetrying ? 'Retrying...' : 'Retry'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -181,28 +207,30 @@ export default function EmailModal({
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Select Coupons
+                Select Coupons ({formState.selectedCoupons.length} of {coupons.length})
               </label>
-              <CouponSelector
-                coupons={coupons}
-                selectedCoupons={formState.selectedCoupons}
-                onSelectionChange={updateSelectedCoupons}
-              />
+              <div className="max-h-[40vh] sm:max-h-[35vh] overflow-y-auto border rounded-md">
+                <CouponSelector
+                  coupons={coupons}
+                  selectedCoupons={formState.selectedCoupons}
+                  onSelectionChange={updateSelectedCoupons}
+                />
+              </div>
               {errors.selection && (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-destructive mt-1">
                   {errors.selection}
                 </p>
               )}
             </div>
           </CardContent>
 
-          <CardFooter className="flex gap-2">
+          <CardFooter className="flex gap-2 flex-shrink-0 border-t bg-background px-4 sm:px-6 pb-6 sm:pb-4">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={formState.isSubmitting}
-              className="flex-1"
+              className="flex-1 h-10 sm:h-9"
             >
               Cancel
             </Button>
@@ -214,7 +242,10 @@ export default function EmailModal({
                 !isFormValid ||
                 !!uiState.successMessage
               }
-              className="flex-1 bg-red-600 hover:bg-red-700"
+              className={cn(
+                "flex-1 h-10 sm:h-9 bg-red-600 hover:bg-red-700 touch-manipulation transition-all",
+                uiState.successMessage && "bg-green-600 hover:bg-green-600"
+              )}
             >
               {formState.isSubmitting ? (
                 <>
@@ -241,7 +272,23 @@ export default function EmailModal({
                   Sending...
                 </>
               ) : uiState.successMessage ? (
-                "Email Sent!"
+                <>
+                  <svg
+                    className="h-4 w-4 mr-1.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Email Sent!
+                </>
               ) : (
                 `Send ${selectedCount} Coupon${selectedCount !== 1 ? 's' : ''}`
               )}

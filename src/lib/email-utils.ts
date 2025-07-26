@@ -60,7 +60,7 @@ const HTTP_STATUS_HANDLERS = {
 
     return `Rate limit exceeded. Please wait ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''} before trying again.`
   },
-  [HTTP_STATUS.BAD_REQUEST]: (response: Response, data: any) => {
+  [HTTP_STATUS.BAD_REQUEST]: (_response: Response, data: any) => {
     const errorMessage = data.message || 'Invalid request data'
     
     if (data.field === 'email') {
@@ -222,9 +222,6 @@ export function isValidEmail(email: string): boolean {
     return false
   }
 
-  // More comprehensive email validation regex
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-  
   const trimmedEmail = email.trim()
   
   // Check length constraints
@@ -341,8 +338,8 @@ export function getErrorMessage(error: unknown): string {
  * @param retryDelay - Delay between retries in milliseconds
  */
 export function createEmailApiClient(
-  maxRetries = EMAIL_CONSTANTS.RETRY_CONFIG.MAX_ATTEMPTS, 
-  retryDelay = EMAIL_CONSTANTS.RETRY_CONFIG.DELAY_MS
+  maxRetries: number = EMAIL_CONSTANTS.RETRY_CONFIG.MAX_ATTEMPTS, 
+  retryDelay: number = EMAIL_CONSTANTS.RETRY_CONFIG.DELAY_MS
 ) {
   return {
     async sendEmail(request: SendEmailRequest): Promise<EmailResult<SendEmailResponse>> {

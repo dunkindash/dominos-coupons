@@ -23,6 +23,14 @@ const EMAIL_CONFIG = {
       header: '30px 20px',
       content: '30px 20px',
       footer: '20px'
+    },
+    mobile: {
+      maxWidth: '100%',
+      padding: {
+        header: '20px 15px',
+        content: '20px 15px',
+        footer: '15px'
+      }
     }
   }
 }
@@ -182,12 +190,44 @@ function generateEmailStyles() {
       .header h1 {
         font-size: 24px !important;
       }
+      .header .subtitle {
+        font-size: 14px !important;
+      }
       .content {
         padding: 20px 15px !important;
+      }
+      .intro-text {
+        font-size: 15px !important;
       }
       .store-info {
         margin-left: 0 !important;
         margin-right: 0 !important;
+        padding: 15px !important;
+        border-radius: 0 6px 6px 0 !important;
+      }
+      .store-info h3 {
+        font-size: 16px !important;
+      }
+      .store-info p {
+        font-size: 13px !important;
+      }
+      .status-badge {
+        font-size: 10px !important;
+        padding: 2px 6px !important;
+        margin-bottom: 3px !important;
+        display: inline-block !important;
+      }
+      h2 {
+        font-size: 18px !important;
+      }
+      table {
+        width: 100% !important;
+      }
+      .footer {
+        padding: 15px !important;
+      }
+      .footer p {
+        font-size: 11px !important;
       }
     }
     
@@ -222,9 +262,11 @@ function generateEmailStyles() {
     @media only screen and (max-width: 600px) {
       .coupon-card {
         padding: 15px !important;
+        margin-bottom: 15px !important;
       }
       .coupon-name {
         font-size: 18px !important;
+        line-height: 1.2 !important;
       }
       .coupon-price {
         font-size: 20px !important;
@@ -232,6 +274,17 @@ function generateEmailStyles() {
       .code-value {
         font-size: 16px !important;
         padding: 6px 10px !important;
+        word-break: break-all !important;
+      }
+      .coupon-code-section {
+        padding: 10px !important;
+      }
+      .coupon-description {
+        font-size: 13px !important;
+      }
+      .special-badge {
+        font-size: 10px !important;
+        padding: 3px 6px !important;
       }
     }
     
@@ -246,6 +299,46 @@ function generateEmailStyles() {
       clip: rect(0,0,0,0);
       white-space: nowrap;
       border: 0;
+    }
+    
+    /* Additional mobile optimizations */
+    @media only screen and (max-width: 480px) {
+      body {
+        font-size: 14px !important;
+      }
+      .email-container {
+        padding: 0 !important;
+      }
+      .header h1 {
+        font-size: 22px !important;
+      }
+      .coupon-card {
+        border-radius: 6px !important;
+      }
+      .code-value {
+        font-size: 14px !important;
+        padding: 4px 8px !important;
+      }
+      .store-info-title {
+        font-size: 16px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+      }
+      .footer {
+        font-size: 10px !important;
+      }
+      /* Make buttons touch-friendly */
+      a {
+        min-height: 44px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      /* Keep light theme for better readability in emails */
     }
   `
 }
@@ -270,8 +363,11 @@ function generateBaseTemplate(data) {
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
   <meta name="x-apple-disable-message-reformatting" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
   <title>Your Domino's Coupons</title>
   <!--[if mso]>
   <noscript>
@@ -425,7 +521,7 @@ function generateStoreInfoSection(storeInfo) {
       border-radius: 0 8px 8px 0;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     ">
-      <h3 style="
+      <h3 class="store-info-title" style="
         margin: 0 0 15px 0;
         color: ${BRAND_COLORS.primary};
         font-size: 20px;
@@ -638,6 +734,8 @@ function generateCouponCard(coupon) {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             position: relative;
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
           ">
             ${specialBadge}
             

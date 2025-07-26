@@ -17,6 +17,8 @@ interface EmailFormErrors {
 
 interface EmailUIState {
   successMessage?: string
+  retryCount?: number
+  isRetrying?: boolean
 }
 
 const INITIAL_FORM_STATE: EmailFormState = {
@@ -139,24 +141,65 @@ export function useEmailModal() {
         language: 'en' // TODO: Get from app context if needed
       })
       
-      // Show success message
+      // Show success message with coupon count
+      const couponCount = selectedCoupons.length
       setUIState({ 
-        successMessage: `Coupons sent successfully to ${formState.email}!` 
+        successMessage: `${couponCount} coupon${couponCount !== 1 ? 's' : ''} sent to ${formState.email}` 
       })
       
-      // Close modal after a short delay to show success message
+      // Close modal after a longer delay to allow user to read success message
       setTimeout(() => {
         onClose()
-      }, 2000)
+        // Reset form after closing
+        setTimeout(resetForm, 300)
+      }, 3500)
       
     } catch (error) {
       const errorMessage = getErrorMessage(error)
-      setErrors({ submit: errorMessage })
+      
+      // Enhance error message based on error type
+      let enhancedMessage = errorMessage
+      if (errorMessage.includes('Network error') || errorMessage.includes('fetch')) {
+        enhancedMessage = 'Unable to connect to the email service. Please check your internet connection and try again.'
+      } else if (errorMessage.includes('Authentication')) {
+        enhancedMessage = 'Your session has expired. Please refresh the page and try again.'
+      } else if (errorMessage.includes('temporarily unavailable')) {
+        enhancedMessage = 'The email service is temporarily unavailable. Please try again in a few minutes.'
+      }
+      
+      setErrors({ submit: enhancedMessage })
+      
+      // Log error for debugging (in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Email send error:', error)
+      }
     } finally {
       setFormState(prev => ({ ...prev, isSubmitting: false }))
     }
   }, [formState.email, validateForm, getSelectedCoupons])
 
+  // Retry last failed submission
+  const retrySubmit = useCallback(async (
+    allCoupons: Coupon[],
+    storeInfo: StoreInfo | null,
+    onClose: () => void
+  ) => {
+    setUIState(prev => ({ 
+      ...prev, 
+      retryCount: (prev.retryCount || 0) + 1,
+      isRetrying: true 
+    }))
+    
+    // Clear previous errors before retrying
+    setErrors(prev => ({ ...prev, submit: undefined }))
+    
+    // Small delay to show retry state
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    setUIState(prev => ({ ...prev, isRetrying: false }))
+    await handleSubmit(allCoupons, storeInfo, onClose)
+  }, [handleSubmit])
+  
   // Reset form
   const resetForm = useCallback(() => {
     setFormState(INITIAL_FORM_STATE)
@@ -181,6 +224,7 @@ export function useEmailModal() {
     updateSelectedCoupons,
     handleEmailBlur,
     handleSubmit,
+    retrySubmit,
     resetForm,
     getSelectedCoupons
   }
