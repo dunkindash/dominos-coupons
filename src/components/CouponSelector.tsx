@@ -51,8 +51,8 @@ export default function CouponSelector({
   return (
     <div className="space-y-3">
       {/* Select All / Deselect All Controls */}
-      <div className="sticky top-0 bg-background z-10 flex items-center justify-between py-2 px-1 border-b">
-        <span className="text-xs sm:text-sm font-medium">
+      <div className="sticky top-0 bg-white z-10 flex items-center justify-between py-3 px-4 border-b-2 border-gray-200">
+        <span className="text-sm font-medium text-gray-600">
           {selectedCoupons.length} of {coupons.length} selected
         </span>
         <Button
@@ -60,14 +60,14 @@ export default function CouponSelector({
           variant="ghost"
           size="sm"
           onClick={handleSelectAll}
-          className="h-8 px-2 sm:px-3 text-xs"
+          className="h-8 px-3 text-sm font-medium text-[#006491] hover:text-[#004d6f] hover:bg-blue-50"
         >
           {isAllSelected ? "Deselect All" : "Select All"}
         </Button>
       </div>
 
       {/* Coupon List */}
-      <div className="space-y-2 px-1">
+      <div className="space-y-2 p-3">
         {coupons.map((coupon) => {
           const couponId = getCouponId(coupon)
           const isSelected = selectedCoupons.includes(couponId)
@@ -78,24 +78,24 @@ export default function CouponSelector({
             <label
               key={couponId}
               className={cn(
-                "flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border cursor-pointer transition-all touch-manipulation",
-                "hover:bg-accent/50",
-                isSelected && "bg-accent border-primary/50"
+                "flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all touch-manipulation bg-white",
+                "hover:border-[#006491]/30 hover:shadow-sm",
+                isSelected && "bg-blue-50 border-[#006491] shadow-sm"
               )}
             >
               <input
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => handleCouponToggle(couponId)}
-                className="mt-0.5 sm:mt-1 h-4 w-4 flex-shrink-0 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                className="mt-0.5 sm:mt-1 h-4 w-4 flex-shrink-0 rounded border-gray-300 text-[#E31837] focus:ring-[#E31837] accent-[#E31837]"
                 aria-describedby={`coupon-${couponId}-description`}
               />
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    <h4 className="font-medium text-sm leading-tight break-words">
-                      {coupon.Name || "Unnamed Coupon"}
+                    <h4 className="font-semibold text-sm leading-tight break-words text-gray-800">
+                      {coupon.Name || "Special Offer"}
                     </h4>
                     
                     {coupon.Description && (
@@ -109,8 +109,11 @@ export default function CouponSelector({
                     
                     {couponCode && (
                       <div className="mt-2">
-                        <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-mono bg-muted text-muted-foreground">
-                          Code: {couponCode}
+                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono bg-gray-100 text-gray-700 border border-gray-200">
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                          </svg>
+                          {couponCode}
                         </span>
                       </div>
                     )}
@@ -118,7 +121,7 @@ export default function CouponSelector({
                   
                   {price && (
                     <div className="text-right">
-                      <span className="text-xs sm:text-sm font-semibold text-green-600 whitespace-nowrap">
+                      <span className="text-sm font-bold text-[#E31837] whitespace-nowrap bg-red-50 px-2 py-1 rounded-md">
                         {price}
                       </span>
                     </div>
@@ -131,9 +134,12 @@ export default function CouponSelector({
       </div>
 
       {selectedCoupons.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-2">
-          Please select at least one coupon to continue
-        </p>
+        <div className="flex items-center justify-center gap-2 text-sm text-amber-600 bg-amber-50 rounded-lg p-3 mx-3">
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p>Please select at least one coupon to continue</p>
+        </div>
       )}
     </div>
   )
