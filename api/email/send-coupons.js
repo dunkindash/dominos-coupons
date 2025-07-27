@@ -483,7 +483,7 @@ function validateOrigin(req) {
     const referer = req.headers.referer
     
     // In development, allow localhost
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
         return true
     }
     
@@ -491,7 +491,9 @@ function validateOrigin(req) {
     const allowedOrigins = [
         process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
         process.env.ALLOWED_ORIGIN,
-        'https://your-domain.com' // Replace with your actual domain
+        'http://localhost:5173',  // Vite dev server
+        'http://localhost:3000',  // Alternative dev port
+        'http://localhost:4173'   // Vite preview
     ].filter(Boolean)
     
     // Check origin header
