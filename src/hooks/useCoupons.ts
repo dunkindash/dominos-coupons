@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
-import type { Coupon } from '@/types/dominos'
+import type { Coupon, StoreInfo } from '@/types/dominos'
 
 interface UseCouponsReturn {
   coupons: Coupon[]
   loading: boolean
   error: string
-  storeInfo: any
+  storeInfo: StoreInfo | null
   fetchCoupons: (storeId: string, language: string) => Promise<void>
 }
 
@@ -13,7 +13,7 @@ export function useCoupons(): UseCouponsReturn {
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [storeInfo, setStoreInfo] = useState<any>(null)
+  const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
 
   const fetchCoupons = useCallback(async (storeId: string, language: string) => {
     if (!storeId) return
@@ -50,20 +50,22 @@ export function useCoupons(): UseCouponsReturn {
       
       // Extract store information
       setStoreInfo({
-        storeId: data.StoreID,
-        businessDate: data.BusinessDate,
-        market: data.Market,
-        storeAsOfTime: data.StoreAsOfTime,
-        status: data.Status,
-        languageCode: data.LanguageCode
+        StoreID: data.StoreID,
+        BusinessDate: data.BusinessDate,
+        MarketName: data.Market,
+        AddressDescription: data.AddressDescription,
+        Phone: data.Phone,
+        IsOpen: data.IsOpen,
+        IsOnlineCapable: data.IsOnlineCapable,
+        IsDeliveryStore: data.IsDeliveryStore
       })
       
       // Process coupons data
       const couponsData = data.Coupons || data.coupons || data.Coupon || { Columns: [], Data: [] }
       
       if (couponsData.Columns && couponsData.Data) {
-        const processedCoupons = couponsData.Data.map((row: any[]) => {
-          const coupon: any = {}
+        const processedCoupons = couponsData.Data.map((row: unknown[]) => {
+          const coupon: Record<string, unknown> = {}
           couponsData.Columns.forEach((column: string, index: number) => {
             coupon[column] = row[index]
           })

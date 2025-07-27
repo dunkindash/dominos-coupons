@@ -26,7 +26,7 @@ export interface EmailError {
   error: string
   message: string
   code?: string
-  details?: any
+  details?: Record<string, string | number | boolean>
   statusCode?: number
 }
 
@@ -60,8 +60,8 @@ const HTTP_STATUS_HANDLERS = {
 
     return `Rate limit exceeded. Please wait ${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''} before trying again.`
   },
-  [HTTP_STATUS.BAD_REQUEST]: (_response: Response, data: any) => {
-    const errorMessage = data.message || 'Invalid request data'
+  [HTTP_STATUS.BAD_REQUEST]: (_response: Response, data: Record<string, string | number | boolean | undefined>) => {
+    const errorMessage = String(data.message) || 'Invalid request data'
     
     if (data.field === 'email') {
       return data.suggestion ? 
@@ -115,7 +115,7 @@ function getAuthToken(): string {
  * @param responseData - Parsed response data
  * @throws Error with appropriate message
  */
-function handleHttpError(response: Response, responseData: any): never {
+function handleHttpError(response: Response, responseData: Record<string, string | number | boolean | undefined>): never {
   const status = response.status as keyof typeof HTTP_STATUS_HANDLERS
   const handler = HTTP_STATUS_HANDLERS[status]
   
@@ -125,7 +125,7 @@ function handleHttpError(response: Response, responseData: any): never {
   }
 
   // Handle other HTTP errors
-  throw new Error(responseData.message || `Request failed with status ${response.status}`)
+  throw new Error(String(responseData.message) || `Request failed with status ${response.status}`)
 }
 
 /**
@@ -325,8 +325,8 @@ export function getErrorMessage(error: unknown): string {
   }
 
   if (typeof error === 'object' && error !== null) {
-    const errorObj = error as any
-    return errorObj.message || errorObj.error || 'An unknown error occurred'
+    const errorObj = error as Record<string, string | number | boolean | undefined>
+    return String(errorObj.message || errorObj.error || 'An unknown error occurred')
   }
 
   return 'An unexpected error occurred'

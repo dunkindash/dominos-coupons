@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect } from 'react'
 
 /**
  * Custom hook for debouncing values
@@ -23,36 +23,39 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 /**
- * Custom hook for debounced callback
+ * Custom hook for debounced callbacks
  * @param callback - Function to debounce
  * @param delay - Delay in milliseconds
  * @param deps - Dependencies array
+ * @returns Debounced callback
  */
-export function useDebouncedCallback<T extends (...args: any[]) => any>(
+export function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
-  delay: number
+  delay: number,
+  deps: React.DependencyList = []
 ): T {
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  const [debouncedCallback] = useState(() => {
+    let timeoutId: NodeJS.Timeout
 
-  const debouncedCallback = ((...args: Parameters<T>) => {
-    if (timeoutId) {
+    const debounced = (...args: Parameters<T>) => {
       clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => callback(...args), delay)
     }
 
-    const newTimeoutId = setTimeout(() => {
-      callback(...args)
-    }, delay)
+    // Add cleanup method
+    ;(debounced as T & { cancel: () => void }).cancel = () => clearTimeout(timeoutId)
 
-    setTimeoutId(newTimeoutId)
-  }) as T
+    return debounced as T
+  })
 
   useEffect(() => {
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
+      ;(debouncedCallback as T & { cancel?: () => void }).cancel?.()
     }
-  }, [timeoutId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedCallback, ...deps])
 
   return debouncedCallback
 }
+
+export default useDebounce

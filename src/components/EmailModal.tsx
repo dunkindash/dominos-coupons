@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
@@ -58,7 +58,17 @@ export default function EmailModal({
   }, [onClose, formState.isSubmitting])
 
   // Memoize computed values to prevent unnecessary re-renders
-  const selectedCount = formState.selectedCoupons.length
+  const selectedCount = useMemo(() => formState.selectedCoupons.length, [formState.selectedCoupons.length])
+  
+  const modalTitle = useMemo(() => 
+    storeInfo ? `Email Coupons - Store #${storeInfo.StoreID}` : 'Email Coupons',
+    [storeInfo]
+  )
+  
+  const availableCouponsText = useMemo(() => 
+    `${coupons.length} coupon${coupons.length !== 1 ? 's' : ''} available`,
+    [coupons.length]
+  )
 
   if (!isOpen) return null
 
@@ -75,7 +85,7 @@ export default function EmailModal({
         <CardHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <CardTitle id="email-modal-title" className="text-lg font-semibold">
-              Email Coupons
+              {modalTitle}
             </CardTitle>
             <Button
               variant="ghost"
@@ -102,7 +112,7 @@ export default function EmailModal({
           </div>
           {storeInfo && (
             <p className="text-sm text-muted-foreground">
-              Store #{storeInfo.StoreID} • {coupons.length} coupons available
+              {availableCouponsText}
             </p>
           )}
         </CardHeader>

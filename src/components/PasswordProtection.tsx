@@ -31,7 +31,7 @@ export default function PasswordProtection({ onAuthenticated }: PasswordProtecti
       } else {
         setError('Invalid password')
       }
-    } catch (err) {
+    } catch {
       setError('Authentication failed')
     } finally {
       setLoading(false)

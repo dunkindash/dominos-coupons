@@ -1,3 +1,6 @@
+// Define specific types for coupon properties
+export type CouponPropertyValue = string | number | boolean | string[] | undefined;
+
 export interface Coupon {
   ID?: string;
   Name?: string;
@@ -13,17 +16,34 @@ export interface Coupon {
   PriceInfo?: string;
   SortSeq?: string;
   GroupCodes?: string;
-  [key: string]: any; // Allow additional properties
+  ServiceMethod?: string;
+  MinimumOrder?: string | number;
+  ValidServiceMethods?: string[];
+  EligibleProducts?: string[];
+  EligibleCategories?: string[];
+  [key: string]: CouponPropertyValue; // Allow additional properties with known types
 }
 
 export interface CouponsResponse {
   Columns: string[];
-  Data: any[][];
+  Data: (string | number | boolean | null)[][];
 }
 
 export interface DominosMenu {
   Coupons: CouponsResponse;
 }
+
+// Define specific types for store properties
+export type StorePropertyValue = string | number | boolean | Record<string, string> | {
+  Description?: string;
+  Latitude?: number;
+  Longitude?: number;
+  [key: string]: string | number | undefined;
+} | {
+  Delivery?: Record<string, string>
+  Carryout?: Record<string, string>
+  [key: string]: Record<string, string> | undefined;
+} | undefined;
 
 export interface StoreInfo {
   StoreID: string | number
@@ -36,13 +56,16 @@ export interface StoreInfo {
   IsDeliveryStore?: boolean
   StoreCoordinates?: {
     Description?: string
-    [key: string]: any
+    Latitude?: number;
+    Longitude?: number;
+    [key: string]: string | number | undefined;
   }
   ServiceHours?: {
     Delivery?: Record<string, string>
-    [key: string]: any
+    Carryout?: Record<string, string>
+    [key: string]: Record<string, string> | undefined;
   }
-  [key: string]: any
+  [key: string]: StorePropertyValue;
 }
 
 export interface EmailRequest {

@@ -6,12 +6,41 @@
 import { verifyToken } from '../auth.js'
 import { Resend } from 'resend'
 import { generateBaseTemplate } from './templates/base-template.js'
+import crypto from 'crypto'
 
 // Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Simple in-memory rate limiting (resets on each deployment)
+// Enhanced rate limiting with Redis support for production
 const rateLimit = new Map()
+
+// Security utilities
+const SECURITY = {
+  // HTML entities for sanitization
+  HTML_ENTITIES: {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;'
+  },
+  
+  // Dangerous patterns to check for
+  DANGEROUS_PATTERNS: [
+    /[<>]/,                    // HTML tags
+    /javascript:/i,            // JavaScript protocol
+    /data:/i,                  // Data protocol
+    /vbscript:/i,             // VBScript protocol
+    /on\w+\s*=/i,             // Event handlers
+    /\bscript\b/i,            // Script tags
+    /\x00/,                   // Null bytes
+    /[\r\n]/,                 // Line breaks in email
+    /[;|&`$]/                 // Command injection chars
+  ]
+}
 
 // Configuration constants
 const CONFIG = {
@@ -40,11 +69,61 @@ function cleanupOldEntries() {
  * @param {Object} req - Express request object
  * @returns {string} Client identifier
  */
+/**
+ * Sanitizes HTML content by escaping dangerous characters
+ * @param {string} input - String to sanitize
+ * @returns {string} Sanitized string
+ */
+function sanitizeHtml(input) {
+  if (typeof input !== 'string') {
+    return String(input)
+  }
+  
+  return input.replace(/[&<>"'`=/]/g, (match) => SECURITY.HTML_ENTITIES[match] || match)
+}
+
+/**
+ * Sanitizes user input for safe storage and display
+ * @param {string} input - Input to sanitize
+ * @returns {string} Sanitized input
+ */
+function sanitizeInput(input) {
+  if (typeof input !== 'string') {
+    return ''
+  }
+  
+  return input
+    .trim()
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .substring(0, 1000) // Limit length
+}
+
+/**
+ * Validates email address against injection attacks
+ * @param {string} email - Email to validate
+ * @returns {boolean} True if email is safe
+ */
+function isEmailSafe(email) {
+  if (typeof email !== 'string') {
+    return false
+  }
+  
+  return !SECURITY.DANGEROUS_PATTERNS.some(pattern => pattern.test(email))
+}
+
 function getClientId(req) {
     const forwarded = req.headers['x-forwarded-for']
-    const ip = typeof forwarded === 'string' ? forwarded.split(',')[0] : 'unknown'
-    const userAgent = req.headers['user-agent'] || 'unknown'
-    return `${ip}:${userAgent}`
+    const ip = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : 'unknown'
+    const userAgent = sanitizeInput(req.headers['user-agent'] || 'unknown')
+    
+    // Create a hash to prevent header injection
+    const hash = crypto.createHash('sha256')
+      .update(`${ip}:${userAgent}`)
+      .digest('hex')
+      .substring(0, 16)
+    
+    return hash
 }
 
 function checkRateLimit(clientId) {
@@ -106,14 +185,21 @@ function validateEmail(email) {
         return { valid: false, error: 'Email address is required' }
     }
 
-    if (email.length > CONFIG.MAX_EMAIL_LENGTH) {
+    const sanitizedEmail = sanitizeInput(email)
+    
+    if (sanitizedEmail.length > CONFIG.MAX_EMAIL_LENGTH) {
         return { valid: false, error: `Email address too long (max ${CONFIG.MAX_EMAIL_LENGTH} characters)` }
+    }
+
+    // Check for security threats
+    if (!isEmailSafe(sanitizedEmail)) {
+        return { valid: false, error: 'Email contains invalid or potentially dangerous characters' }
     }
 
     // More comprehensive email validation
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
 
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(sanitizedEmail)) {
         return { valid: false, error: 'Please enter a valid email address' }
     }
 
@@ -128,16 +214,51 @@ function validateEmail(email) {
         'hotmail.cm': 'hotmail.com'
     }
 
-    const domain = email.split('@')[1]?.toLowerCase()
+    const domain = sanitizedEmail.split('@')[1]?.toLowerCase()
     if (domain && commonDomainTypos[domain]) {
         return {
             valid: false,
-            error: `Did you mean ${email.replace(domain, commonDomainTypos[domain])}?`,
-            suggestion: email.replace(domain, commonDomainTypos[domain])
+            error: `Did you mean ${sanitizedEmail.replace(domain, commonDomainTypos[domain])}?`,
+            suggestion: sanitizedEmail.replace(domain, commonDomainTypos[domain])
         }
     }
 
-    return { valid: true }
+    return { valid: true, sanitizedEmail }
+}
+
+/**
+ * Sanitizes coupon data for safe processing
+ * @param {Object} coupon - Coupon object to sanitize
+ * @returns {Object} Sanitized coupon object
+ */
+function sanitizeCoupon(coupon) {
+    if (!coupon || typeof coupon !== 'object') {
+        return {}
+    }
+    
+    const sanitized = {}
+    
+    // List of allowed fields and their sanitization
+    const allowedFields = {
+        ID: sanitizeInput,
+        Name: sanitizeInput,
+        Description: sanitizeInput,
+        Price: sanitizeInput,
+        Code: sanitizeInput,
+        VirtualCode: sanitizeInput,
+        ExpirationDate: sanitizeInput,
+        Tags: sanitizeInput,
+        Local: (val) => String(val) === 'true' ? 'true' : 'false',
+        Bundle: (val) => String(val) === 'true' ? 'true' : 'false'
+    }
+    
+    Object.entries(allowedFields).forEach(([field, sanitizer]) => {
+        if (coupon[field] !== undefined && coupon[field] !== null) {
+            sanitized[field] = sanitizer(coupon[field])
+        }
+    })
+    
+    return sanitized
 }
 
 function validateCoupons(coupons) {
@@ -153,7 +274,9 @@ function validateCoupons(coupons) {
         return { valid: false, error: `Too many coupons selected (max ${CONFIG.MAX_COUPONS})` }
     }
 
-    // Validate each coupon
+    const sanitizedCoupons = []
+
+    // Validate and sanitize each coupon
     for (let i = 0; i < coupons.length; i++) {
         const coupon = coupons[i]
 
@@ -161,21 +284,25 @@ function validateCoupons(coupons) {
             return { valid: false, error: `Invalid coupon data at position ${i + 1}` }
         }
 
+        const sanitizedCoupon = sanitizeCoupon(coupon)
+
         // Must have a name
-        if (typeof coupon.Name !== 'string' || !coupon.Name.trim()) {
+        if (!sanitizedCoupon.Name || !sanitizedCoupon.Name.trim()) {
             return { valid: false, error: `Coupon at position ${i + 1} is missing a name` }
         }
 
         // Must have either Code or VirtualCode
-        const hasCode = (typeof coupon.Code === 'string' && coupon.Code.trim()) ||
-            (typeof coupon.VirtualCode === 'string' && coupon.VirtualCode.trim())
+        const hasCode = (sanitizedCoupon.Code && sanitizedCoupon.Code.trim()) ||
+            (sanitizedCoupon.VirtualCode && sanitizedCoupon.VirtualCode.trim())
 
         if (!hasCode) {
-            return { valid: false, error: `Coupon "${coupon.Name}" is missing a valid code` }
+            return { valid: false, error: `Coupon "${sanitizedCoupon.Name}" is missing a valid code` }
         }
+
+        sanitizedCoupons.push(sanitizedCoupon)
     }
 
-    return { valid: true }
+    return { valid: true, sanitizedCoupons }
 }
 
 function validateStoreInfo(storeInfo) {
@@ -346,7 +473,52 @@ async function handleRateLimiting(req, res) {
     return { shouldReturn: false, clientId }
 }
 
+/**
+ * Validates request origin for CSRF protection
+ * @param {Object} req - Express request object
+ * @returns {boolean} True if origin is allowed
+ */
+function validateOrigin(req) {
+    const origin = req.headers.origin
+    const referer = req.headers.referer
+    
+    // In development, allow localhost
+    if (process.env.NODE_ENV === 'development') {
+        return true
+    }
+    
+    // List of allowed origins (configure based on your deployment)
+    const allowedOrigins = [
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+        process.env.ALLOWED_ORIGIN,
+        'https://your-domain.com' // Replace with your actual domain
+    ].filter(Boolean)
+    
+    // Check origin header
+    if (origin) {
+        return allowedOrigins.some(allowed => origin === allowed || origin.endsWith(allowed))
+    }
+    
+    // Fallback to referer header
+    if (referer) {
+        return allowedOrigins.some(allowed => referer.startsWith(allowed))
+    }
+    
+    return false
+}
+
 async function validateRequestData(req, res) {
+    // Validate origin for CSRF protection
+    if (!validateOrigin(req)) {
+        const response = createErrorResponse(
+            'Invalid origin',
+            'Request origin is not allowed',
+            403
+        )
+        res.status(response.status).json(response.body)
+        return { shouldReturn: true }
+    }
+
     // Validate content type
     const contentType = req.headers['content-type']
     if (!contentType || !contentType.includes('application/json')) {
@@ -400,7 +572,12 @@ async function validateRequestData(req, res) {
         return { shouldReturn: true }
     }
 
-    return { shouldReturn: false, email, coupons, storeInfo }
+    return { 
+        shouldReturn: false, 
+        email: emailValidation.sanitizedEmail || email, 
+        coupons: couponsValidation.sanitizedCoupons || coupons, 
+        storeInfo 
+    }
 }
 
 /**

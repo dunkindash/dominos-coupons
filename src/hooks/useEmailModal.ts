@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react"
+import { useDebounce } from "@/hooks/useDebounce"
 import { getCouponId } from "@/lib/coupon-utils"
 import { sendCouponsEmail, getErrorMessage, validateEmailWithFeedback } from "@/lib/email-utils"
 import type { Coupon, StoreInfo } from "@/types/dominos"
@@ -48,6 +49,9 @@ export function useEmailModal() {
     return undefined
   }, [])
 
+  // Debounce email for validation
+  const debouncedEmail = useDebounce(formState.email, 300)
+
   // Update email with validation
   const updateEmail = useCallback((email: string) => {
     setFormState(prev => ({ ...prev, email }))
@@ -74,11 +78,11 @@ export function useEmailModal() {
     }
   }, [errors.selection, uiState.successMessage])
 
-  // Handle email blur validation
+  // Handle email blur validation with debounced value
   const handleEmailBlur = useCallback(() => {
-    const emailError = validateEmail(formState.email)
+    const emailError = validateEmail(debouncedEmail)
     setErrors(prev => ({ ...prev, email: emailError }))
-  }, [formState.email, validateEmail])
+  }, [debouncedEmail, validateEmail])
 
   // Get selected coupon objects
   const getSelectedCoupons = useCallback((allCoupons: Coupon[]) => {
@@ -106,6 +110,13 @@ export function useEmailModal() {
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }, [formState.email, formState.selectedCoupons.length, validateEmail])
+
+  // Reset form
+  const resetForm = useCallback(() => {
+    setFormState(INITIAL_FORM_STATE)
+    setErrors(INITIAL_ERRORS)
+    setUIState(INITIAL_UI_STATE)
+  }, [])
 
   // Handle form submission
   const handleSubmit = useCallback(async (
@@ -176,7 +187,7 @@ export function useEmailModal() {
     } finally {
       setFormState(prev => ({ ...prev, isSubmitting: false }))
     }
-  }, [formState.email, validateForm, getSelectedCoupons])
+  }, [formState.email, validateForm, getSelectedCoupons, resetForm])
 
   // Retry last failed submission
   const retrySubmit = useCallback(async (
@@ -199,13 +210,6 @@ export function useEmailModal() {
     setUIState(prev => ({ ...prev, isRetrying: false }))
     await handleSubmit(allCoupons, storeInfo, onClose)
   }, [handleSubmit])
-  
-  // Reset form
-  const resetForm = useCallback(() => {
-    setFormState(INITIAL_FORM_STATE)
-    setErrors(INITIAL_ERRORS)
-    setUIState(INITIAL_UI_STATE)
-  }, [])
 
   // Computed values
   const isFormValid = useMemo(() => {
