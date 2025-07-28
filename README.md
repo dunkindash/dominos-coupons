@@ -15,10 +15,6 @@ A modern web application for finding and managing Domino's Pizza store coupons. 
 
 Visit the app: [https://dominos.techbrew.dev](https://dominos.techbrew.dev)
 
-## 📱 Screenshots
-
-[Add screenshots of your app here]
-
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18 + TypeScript
