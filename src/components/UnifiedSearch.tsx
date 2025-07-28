@@ -191,32 +191,34 @@ export default function UnifiedSearch({
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-lg border-0">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-bold text-gray-900">Find Domino's Deals</CardTitle>
+      <CardHeader className="pb-4 px-4 sm:px-6">
+        <CardTitle className="text-lg sm:text-xl font-bold text-gray-900">Find Domino's Deals</CardTitle>
         <p className="text-sm text-gray-600">Search by store number or find nearby locations</p>
       </CardHeader>
-      <CardContent>
-        {/* Tab Navigation */}
+      <CardContent className="px-4 sm:px-6">
+        {/* Tab Navigation - Enhanced for mobile */}
         <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveTab('store-number')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+            className={`flex-1 py-3 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation ${
               activeTab === 'store-number'
                 ? 'bg-white text-dominos-red shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-gray-600 hover:text-gray-900 active:bg-gray-200'
             }`}
           >
-            Store Number
+            <span className="block sm:hidden">Store #</span>
+            <span className="hidden sm:block">Store Number</span>
           </button>
           <button
             onClick={() => setActiveTab('find-nearby')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+            className={`flex-1 py-3 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation ${
               activeTab === 'find-nearby'
                 ? 'bg-white text-dominos-red shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-gray-600 hover:text-gray-900 active:bg-gray-200'
             }`}
           >
-            Find Nearby
+            <span className="block sm:hidden">Nearby</span>
+            <span className="hidden sm:block">Find Nearby</span>
           </button>
         </div>
 
@@ -224,13 +226,13 @@ export default function UnifiedSearch({
         {activeTab === 'store-number' && (
           <div className="space-y-4">
             <form onSubmit={handleStoreNumberSubmit} className="space-y-4">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Language</label>
                   <select
                     value={currentLanguage}
                     onChange={(e) => onLanguageChange(e.target.value)}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-11 sm:h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dominos-red focus-visible:border-dominos-red disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation"
                   >
                     <option value="en">English</option>
                     <option value="es">Español</option>
@@ -243,7 +245,7 @@ export default function UnifiedSearch({
                     placeholder="Enter store number (e.g., 7046)"
                     value={storeId}
                     onChange={(e) => handleStoreIdChange(e.target.value)}
-                    className="w-full transition-all duration-200 focus:ring-2 focus:ring-dominos-red focus:border-dominos-red"
+                    className="w-full h-11 sm:h-9 text-base sm:text-sm transition-all duration-200 focus:ring-2 focus:ring-dominos-red focus:border-dominos-red touch-manipulation"
                   />
                 </div>
                 <RateLimitIndicator
@@ -257,14 +259,15 @@ export default function UnifiedSearch({
                 type="submit" 
                 disabled={loading || !storeId.trim()} 
                 variant="dominos-primary"
-                className="w-full transition-all duration-200 font-semibold shadow-md hover:shadow-lg disabled:opacity-50"
+                size="lg"
+                className="w-full h-12 sm:h-10 text-base sm:text-sm transition-all duration-200 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 touch-manipulation"
               >
                 {loading ? 'Loading...' : 'Find Coupons'}
               </Button>
             </form>
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-red-600 text-sm leading-relaxed">{error}</p>
               </div>
             )}
           </div>
@@ -274,7 +277,7 @@ export default function UnifiedSearch({
         {activeTab === 'find-nearby' && (
           <div className="space-y-4">
             <form onSubmit={handleLocationSubmit} className="space-y-4">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Street Address</label>
                   <Input
@@ -282,7 +285,7 @@ export default function UnifiedSearch({
                     placeholder="123 Main St"
                     value={street}
                     onChange={(e) => setStreet(e.target.value)}
-                    className="w-full focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue"
+                    className="w-full h-11 sm:h-9 text-base sm:text-sm focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue touch-manipulation"
                   />
                 </div>
                 <div className="space-y-2">
@@ -292,16 +295,16 @@ export default function UnifiedSearch({
                     placeholder="City"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue"
+                    className="w-full h-11 sm:h-9 text-base sm:text-sm focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue touch-manipulation"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">State</label>
                     <select
                       value={state}
                       onChange={(e) => setState(e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-11 sm:h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base sm:text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dominos-blue focus-visible:border-dominos-blue disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation"
                     >
                       <option value="">Select State</option>
                       {US_STATES.map(stateOption => (
@@ -318,7 +321,7 @@ export default function UnifiedSearch({
                       placeholder="12345"
                       value={zipCode}
                       onChange={(e) => setZipCode(e.target.value)}
-                      className="w-full focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue"
+                      className="w-full h-11 sm:h-9 text-base sm:text-sm focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue touch-manipulation"
                       maxLength={10}
                     />
                   </div>
@@ -328,7 +331,8 @@ export default function UnifiedSearch({
                 type="submit" 
                 disabled={locationLoading || !street.trim() || !city.trim() || !state || !zipCode.trim()}
                 variant="dominos-accent"
-                className="w-full font-semibold"
+                size="lg"
+                className="w-full h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
               >
                 {locationLoading ? 'Finding Stores...' : 'Find Stores'}
               </Button>
@@ -369,15 +373,16 @@ export default function UnifiedSearch({
                   {stores.map((store) => (
                     <div
                       key={store.storeId}
-                      className="p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer border border-gray-200 hover:border-dominos-red"
+                      className="p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer border border-gray-200 hover:border-dominos-red touch-manipulation active:bg-gray-200"
                       onClick={() => handleStoreSelection(store.storeId)}
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                        <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm text-gray-900">Store #{store.storeId}</div>
-                          <div className="text-xs text-gray-600 mt-1">{store.address}</div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            📞 {store.phone} • 📍 {store.distance.toFixed(1)} miles
+                          <div className="text-xs text-gray-600 mt-1 break-words">{store.address}</div>
+                          <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-2">
+                            <span>📞 {store.phone}</span>
+                            <span>📍 {store.distance.toFixed(1)} miles</span>
                           </div>
                           {store.deliveryMinutes && (
                             <div className="text-xs text-green-600 mt-1">
@@ -385,8 +390,8 @@ export default function UnifiedSearch({
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2">
+                          <div className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                             store.isOpen 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-red-100 text-red-800'
@@ -400,7 +405,7 @@ export default function UnifiedSearch({
                               e.stopPropagation()
                               handleStoreSelection(store.storeId)
                             }}
-                            className="text-xs"
+                            className="text-xs h-8 px-3 touch-manipulation flex-shrink-0"
                           >
                             View Deals
                           </Button>

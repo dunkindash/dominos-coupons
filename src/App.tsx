@@ -344,10 +344,10 @@ function App() {
         <EnhancedHeader />
         
         {/* Main content container with responsive grid */}
-        <div className="dominos-container py-8">
+        <div className="dominos-container py-4 sm:py-6 lg:py-8">
           
           {/* Search and Store Info Section - Card-based layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Search takes up 2 columns on large screens */}
             <div className="lg:col-span-2">
               <div className="dominos-card">
@@ -392,7 +392,7 @@ function App() {
 
           {/* Coupons Display Section */}
           {processedCoupons.length > 0 && (
-            <div className="dominos-card mb-8">
+            <div className="dominos-card mb-6 sm:mb-8">
               <CouponDisplay
                 coupons={processedCoupons}
                 onCardToggle={toggleCardExpansion}
@@ -412,24 +412,25 @@ function App() {
 
           {/* Empty State - Updated for white background */}
           {processedCoupons.length === 0 && !loading && !error && (
-            <div className="dominos-card text-center py-16">
-              <div className="mb-8">
-                <div className="text-8xl mb-4">🍕</div>
-                <h2 className="dominos-heading-lg text-gray-900 mb-2">
+            <div className="dominos-card text-center py-12 sm:py-16">
+              <div className="mb-6 sm:mb-8">
+                <div className="text-6xl sm:text-8xl mb-4">🍕</div>
+                <h2 className="dominos-heading-lg text-gray-900 mb-2 px-4">
                   Ready to Find Great Deals?
                 </h2>
-                <p className="dominos-subheading text-lg">
+                <p className="dominos-subheading text-base sm:text-lg px-4">
                   Enter a store number or search by address to discover amazing Domino's coupons!
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-gray-600">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center text-gray-600 px-4">
                 <div className="flex items-center gap-2">
-                  <div className="text-2xl">🏪</div>
+                  <div className="text-xl sm:text-2xl">🏪</div>
                   <span className="text-sm">Enter store number directly</span>
                 </div>
-                <div className="text-gray-400">or</div>
+                <div className="text-gray-400 hidden sm:block">or</div>
+                <div className="text-gray-400 sm:hidden">or</div>
                 <div className="flex items-center gap-2">
-                  <div className="text-2xl">📍</div>
+                  <div className="text-xl sm:text-2xl">📍</div>
                   <span className="text-sm">Search by your address</span>
                 </div>
               </div>

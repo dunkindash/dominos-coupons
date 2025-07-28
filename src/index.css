@@ -155,14 +155,45 @@
   }
   
   .dominos-container {
-    @apply max-w-6xl mx-auto px-4;
+    @apply max-w-6xl mx-auto px-4 sm:px-6;
   }
   
   .dominos-card {
-    @apply bg-white rounded-lg shadow-md border border-gray-200 p-6;
+    @apply bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6;
   }
   
   .dominos-card-compact {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4;
+  }
+  
+  /* Touch-friendly interactions */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Responsive text sizing */
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
+  }
+  
+  /* Mobile-first spacing utilities */
+  .space-mobile-sm > * + * {
+    @apply mt-2 sm:mt-3;
+  }
+  
+  .space-mobile-md > * + * {
+    @apply mt-3 sm:mt-4;
+  }
+  
+  .space-mobile-lg > * + * {
+    @apply mt-4 sm:mt-6;
   }
 }

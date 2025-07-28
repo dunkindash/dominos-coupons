@@ -205,54 +205,68 @@ const CouponCard = memo(function CouponCard({ coupon, index, isExpanded, onToggl
             className={`
                 group relative overflow-hidden transition-all duration-300 ease-out
                 hover:shadow-2xl hover:-translate-y-1 hover:scale-[1.02]
+                active:scale-[0.98] active:shadow-lg
                 flex flex-col h-full cursor-pointer
                 ${category.borderColor} border-2
                 bg-white hover:bg-gray-50/50
                 transform-gpu will-change-transform
+                touch-manipulation
             `}
             onClick={onToggle}
         >
             {/* Category Badge - Top Right */}
-            <div className="absolute top-3 right-3 z-10">
+            <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10">
                 <span className={`
                     px-2 py-1 rounded-full text-xs font-bold
                     ${category.color} ${category.bgColor}
                     shadow-sm border ${category.borderColor}
                     transition-all duration-200 group-hover:scale-105
+                    hidden xs:inline-flex
                 `}>
                     {category.icon} {category.name}
                 </span>
+                <span className={`
+                    w-8 h-8 rounded-full text-xs font-bold
+                    ${category.color} ${category.bgColor}
+                    shadow-sm border ${category.borderColor}
+                    transition-all duration-200 group-hover:scale-105
+                    flex items-center justify-center xs:hidden
+                `}>
+                    {category.icon}
+                </span>
             </div>
 
-            <CardHeader className={`pb-4 ${category.bgColor} relative`}>
+            <CardHeader className={`pb-3 sm:pb-4 px-4 sm:px-6 ${category.bgColor} relative`}>
                 {/* Savings Amount - Prominent Display */}
-                <div className="flex justify-between items-start gap-4 mb-3">
-                    <div className="flex-1">
+                <div className="flex justify-between items-start gap-2 sm:gap-4 mb-3">
+                    <div className="flex-1 min-w-0">
                         <div className={`
-                            inline-flex items-center gap-2 mb-3 px-3 py-2 rounded-lg
+                            inline-flex items-center gap-1 sm:gap-2 mb-3 px-2 sm:px-3 py-1 sm:py-2 rounded-lg
                             ${savings.type === 'dollar' ? 'bg-green-100 text-green-800' : 
                               savings.type === 'percent' ? 'bg-orange-100 text-orange-800' : 
                               'bg-dominos-red text-white'}
-                            font-bold text-lg shadow-sm
+                            font-bold text-base sm:text-lg shadow-sm
                             transition-all duration-200 group-hover:scale-105
                         `}>
-                            {savings.type === 'dollar' && '💰'}
-                            {savings.type === 'percent' && '🎯'}
-                            {savings.type === 'price' && '💵'}
-                            <span className="text-xl">{savings.amount}</span>
-                            {savings.type !== 'price' && <span className="text-sm">OFF</span>}
+                            <span className="text-sm sm:text-base">
+                                {savings.type === 'dollar' && '💰'}
+                                {savings.type === 'percent' && '🎯'}
+                                {savings.type === 'price' && '💵'}
+                            </span>
+                            <span className="text-lg sm:text-xl">{savings.amount}</span>
+                            {savings.type !== 'price' && <span className="text-xs sm:text-sm">OFF</span>}
                         </div>
                         
-                        <CardTitle className="text-lg leading-tight mb-2 font-bold text-gray-900 pr-16">
+                        <CardTitle className="text-base sm:text-lg leading-tight mb-2 font-bold text-gray-900 pr-10 sm:pr-16">
                             {coupon.Name || 'Special Offer'}
                         </CardTitle>
                     </div>
                 </div>
 
                 {/* Coupon Codes */}
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-1 sm:gap-2 mb-3">
                     <CardDescription className={`
-                        text-sm px-3 py-1 rounded-md font-medium
+                        text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-md font-medium
                         bg-white/80 text-gray-700 border border-gray-300
                         transition-all duration-200 group-hover:bg-white
                     `}>
@@ -260,7 +274,7 @@ const CouponCard = memo(function CouponCard({ coupon, index, isExpanded, onToggl
                     </CardDescription>
                     {coupon.VirtualCode && (
                         <CardDescription className={`
-                            text-sm px-3 py-1 rounded-md font-medium
+                            text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-md font-medium
                             bg-blue-100 text-blue-800 border border-blue-200
                             transition-all duration-200 group-hover:bg-blue-200
                         `}>
@@ -283,7 +297,7 @@ const CouponCard = memo(function CouponCard({ coupon, index, isExpanded, onToggl
                 </div>
             </CardHeader>
 
-            <CardContent className="flex flex-col flex-grow p-4">
+            <CardContent className="flex flex-col flex-grow p-3 sm:p-4">
                 {/* Description */}
                 <div className="flex-grow">
                     <p className="text-gray-700 mb-4 text-sm leading-relaxed font-medium">
@@ -356,10 +370,11 @@ const CouponCard = memo(function CouponCard({ coupon, index, isExpanded, onToggl
                             onToggle()
                         }}
                         className={`
-                            w-full text-xs font-medium transition-all duration-200
+                            w-full h-10 sm:h-8 text-xs sm:text-xs font-medium transition-all duration-200
                             bg-dominos-red hover:bg-dominos-red-hover text-white
-                            shadow-md hover:shadow-lg transform hover:scale-[1.02]
+                            shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]
                             border-0 focus:ring-2 focus:ring-dominos-red/50
+                            touch-manipulation
                         `}
                     >
                         {isExpanded ? '👆 Hide Details' : '👇 Show All Details'}
@@ -484,8 +499,8 @@ export const CouponDisplay = memo(function CouponDisplay({ coupons, onCardToggle
                         </div>
                     )}
                     
-                    {/* Enhanced Grid Layout with Consistent Card Sizing */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
+                    {/* Enhanced Grid Layout with Consistent Card Sizing - Responsive */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 auto-rows-fr">
                         {categoryCoupons.map((coupon, index) => {
                             const cardId = coupon.Code || coupon.ID || `${category.name}-${index}`
                             const isExpanded = expandedCards.has(cardId)

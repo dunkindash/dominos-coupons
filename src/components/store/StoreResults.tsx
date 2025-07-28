@@ -93,13 +93,13 @@ export const StoreResults = memo(function StoreResults({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h3 className="text-lg font-semibold text-gray-900">
           {stores.length} store{stores.length !== 1 ? 's' : ''} found
         </h3>
         {searchLocation && (
           <p className="text-sm text-gray-600">
-            Near: <span className="font-medium">{searchLocation}</span>
+            Near: <span className="font-medium break-words">{searchLocation}</span>
           </p>
         )}
       </div>
@@ -108,17 +108,17 @@ export const StoreResults = memo(function StoreResults({
         {stores.map((store) => (
           <Card 
             key={store.storeId} 
-            className="hover:shadow-md transition-shadow duration-200 border-gray-200"
+            className="hover:shadow-md transition-shadow duration-200 border-gray-200 touch-manipulation"
           >
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                 <div className="flex-1 min-w-0">
                   {/* Store Header */}
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3 mb-3">
                     <h4 className="text-lg font-bold text-gray-900">
                       Store #{store.storeId}
                     </h4>
-                    <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold w-fit ${
                       store.isOpen 
                         ? 'bg-green-100 text-green-800 border border-green-200' 
                         : 'bg-red-100 text-red-800 border border-red-200'
@@ -132,22 +132,22 @@ export const StoreResults = memo(function StoreResults({
 
                   {/* Store Address */}
                   <div className="mb-3">
-                    <p className="text-gray-700 text-sm leading-relaxed">
+                    <p className="text-gray-700 text-sm leading-relaxed break-words">
                       {store.address}
                     </p>
                   </div>
 
                   {/* Store Details */}
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                  <div className="flex flex-col xs:flex-row xs:flex-wrap xs:items-center gap-2 xs:gap-4 text-xs text-gray-600">
                     <div className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                       <span className="font-medium">{store.phone}</span>
                     </div>
                     
                     <div className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -156,7 +156,7 @@ export const StoreResults = memo(function StoreResults({
 
                     {store.deliveryMinutes && (
                       <div className="flex items-center gap-1 text-dominos-blue-600">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-medium">~{store.deliveryMinutes} min delivery</span>
@@ -166,12 +166,12 @@ export const StoreResults = memo(function StoreResults({
                 </div>
 
                 {/* Action Button */}
-                <div className="ml-4 flex-shrink-0">
+                <div className="flex-shrink-0 w-full sm:w-auto">
                   <Button
                     variant="dominos-primary"
                     size="lg"
                     onClick={() => onStoreSelect(store.storeId)}
-                    className="whitespace-nowrap"
+                    className="w-full sm:w-auto whitespace-nowrap h-12 sm:h-10 text-base sm:text-sm touch-manipulation"
                   >
                     View Deals
                   </Button>

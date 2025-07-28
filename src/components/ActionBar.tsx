@@ -36,14 +36,14 @@ export const ActionBar = memo(function ActionBar({
       {/* Background with subtle shadow and border */}
       <div className="bg-white border-t border-gray-200 shadow-lg">
         {/* Container with responsive padding */}
-        <div className="dominos-container py-4">
+        <div className="dominos-container py-3 sm:py-4">
           {/* Flex layout for responsive behavior */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
             
             {/* Coupon count and info - Hidden on mobile to save space */}
             <div className="hidden sm:flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-dominos-red rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-dominos-red rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-sm font-bold">{couponCount}</span>
                 </div>
                 <div>
@@ -61,12 +61,12 @@ export const ActionBar = memo(function ActionBar({
             <div className="flex items-center gap-3 w-full sm:w-auto">
               
               {/* Mobile-only coupon count */}
-              <div className="flex sm:hidden items-center gap-2 flex-1">
-                <div className="w-6 h-6 bg-dominos-red rounded-full flex items-center justify-center">
+              <div className="flex sm:hidden items-center gap-2 flex-1 min-w-0">
+                <div className="w-7 h-7 bg-dominos-red rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-xs font-bold">{couponCount}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-700">
-                  {couponCount} {couponCount === 1 ? 'Deal' : 'Deals'}
+                <span className="text-sm font-medium text-gray-700 truncate">
+                  {couponCount} {couponCount === 1 ? 'Deal' : 'Deals'} Found
                 </span>
               </div>
 
@@ -80,9 +80,10 @@ export const ActionBar = memo(function ActionBar({
                   "shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]",
                   "transition-all duration-200 font-semibold",
                   "focus-visible:ring-2 focus-visible:ring-dominos-red/30 focus-visible:ring-offset-2",
-                  // Mobile responsive sizing
-                  "min-h-[48px] sm:min-h-[44px] px-6 sm:px-8",
-                  "w-full sm:w-auto"
+                  // Mobile responsive sizing with touch-friendly targets
+                  "min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 lg:px-8",
+                  "w-auto sm:w-auto flex-shrink-0",
+                  "touch-manipulation"
                 )}
                 aria-label={`Email ${couponCount} coupons to save them`}
               >
@@ -95,8 +96,8 @@ export const ActionBar = memo(function ActionBar({
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                 </svg>
-                <span className="text-sm sm:text-base">
-                  Email Coupons
+                <span className="text-sm sm:text-base whitespace-nowrap">
+                  <span className="hidden xs:inline">Email </span>Coupons
                 </span>
               </Button>
 
@@ -105,11 +106,11 @@ export const ActionBar = memo(function ActionBar({
                 variant="dominos-secondary"
                 size="lg"
                 className={cn(
-                  "hidden sm:flex",
+                  "hidden md:flex",
                   "shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]",
                   "transition-all duration-200",
                   "focus-visible:ring-2 focus-visible:ring-dominos-red/30 focus-visible:ring-offset-2",
-                  "min-h-[44px] px-4"
+                  "min-h-[44px] px-4 touch-manipulation"
                 )}
                 disabled
                 aria-label="Share coupons (coming soon)"
