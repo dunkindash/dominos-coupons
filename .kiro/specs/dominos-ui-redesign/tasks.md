@@ -35,7 +35,7 @@
   - Include store status indicators and business hours if available
   - _Requirements: 2.3, 4.2, 4.3_
 
-- [ ] 6. Redesign coupon display with improved visual hierarchy
+- [x] 6. Redesign coupon display with improved visual hierarchy
   - Update CouponDisplay component to use grid layout with consistent card sizing
   - Enhance visual hierarchy to highlight savings amounts and key information
   - Add color-coded categories or visual indicators for different deal types
