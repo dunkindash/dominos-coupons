@@ -75,6 +75,7 @@ export const ActionBar = memo(function ActionBar({
                 onClick={onEmailCoupons}
                 variant="dominos-primary"
                 size="lg"
+                type="button"
                 className={cn(
                   // Enhanced styling for prominence
                   "shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]",
@@ -85,13 +86,16 @@ export const ActionBar = memo(function ActionBar({
                   "w-auto sm:w-auto flex-shrink-0",
                   "touch-manipulation"
                 )}
-                aria-label={`Email ${couponCount} coupons to save them`}
+                aria-label={`Email ${couponCount} ${couponCount === 1 ? 'coupon' : 'coupons'} to save them for later use`}
+                aria-describedby="email-button-description"
               >
                 <svg 
                   className="w-4 h-4 mr-2 flex-shrink-0" 
                   fill="currentColor" 
                   viewBox="0 0 20 20"
                   aria-hidden="true"
+                  role="img"
+                  aria-label="Email icon"
                 >
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
@@ -100,6 +104,9 @@ export const ActionBar = memo(function ActionBar({
                   <span className="hidden xs:inline">Email </span>Coupons
                 </span>
               </Button>
+              <span id="email-button-description" className="sr-only">
+                Opens a modal to enter your email address and send the coupons
+              </span>
 
               {/* Secondary action button - Share (future enhancement) */}
               <Button

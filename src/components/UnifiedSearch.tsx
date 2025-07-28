@@ -196,11 +196,15 @@ export default function UnifiedSearch({
         <p className="text-sm text-gray-600">Search by store number or find nearby locations</p>
       </CardHeader>
       <CardContent className="px-4 sm:px-6">
-        {/* Tab Navigation - Enhanced for mobile */}
-        <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+        {/* Tab Navigation - Enhanced for mobile and accessibility */}
+        <div className="flex mb-6 bg-gray-100 rounded-lg p-1" role="tablist" aria-label="Search options">
           <button
+            role="tab"
+            aria-selected={activeTab === 'store-number'}
+            aria-controls="store-number-panel"
+            id="store-number-tab"
             onClick={() => setActiveTab('store-number')}
-            className={`flex-1 py-3 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation ${
+            className={`flex-1 py-3 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dominos-red focus-visible:ring-offset-2 ${
               activeTab === 'store-number'
                 ? 'bg-white text-dominos-red shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 active:bg-gray-200'
@@ -210,8 +214,12 @@ export default function UnifiedSearch({
             <span className="hidden sm:block">Store Number</span>
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'find-nearby'}
+            aria-controls="find-nearby-panel"
+            id="find-nearby-tab"
             onClick={() => setActiveTab('find-nearby')}
-            className={`flex-1 py-3 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation ${
+            className={`flex-1 py-3 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dominos-red focus-visible:ring-offset-2 ${
               activeTab === 'find-nearby'
                 ? 'bg-white text-dominos-red shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 active:bg-gray-200'
@@ -224,29 +232,55 @@ export default function UnifiedSearch({
 
         {/* Store Number Tab */}
         {activeTab === 'store-number' && (
-          <div className="space-y-4">
+          <div 
+            id="store-number-panel"
+            role="tabpanel"
+            aria-labelledby="store-number-tab"
+            className="space-y-4"
+          >
             <form onSubmit={handleStoreNumberSubmit} className="space-y-4">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Language</label>
+                  <label 
+                    htmlFor="language-select"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Language
+                  </label>
                   <select
+                    id="language-select"
                     value={currentLanguage}
                     onChange={(e) => onLanguageChange(e.target.value)}
+                    aria-describedby="language-help"
                     className="flex h-11 sm:h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dominos-red focus-visible:border-dominos-red disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation"
                   >
                     <option value="en">English</option>
                     <option value="es">Español</option>
                   </select>
+                  <p id="language-help" className="text-xs text-gray-500">
+                    Select your preferred language for coupon descriptions
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Store Number</label>
+                  <label 
+                    htmlFor="store-number-input"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Store Number
+                  </label>
                   <Input
+                    id="store-number-input"
                     type="text"
                     placeholder="Enter store number (e.g., 7046)"
                     value={storeId}
                     onChange={(e) => handleStoreIdChange(e.target.value)}
+                    aria-describedby="store-number-help"
                     className="w-full h-11 sm:h-9 text-base sm:text-sm transition-all duration-200 focus:ring-2 focus:ring-dominos-red focus:border-dominos-red touch-manipulation"
+                    required
                   />
+                  <p id="store-number-help" className="text-xs text-gray-500">
+                    Find your store number on your receipt or Domino's website
+                  </p>
                 </div>
                 <RateLimitIndicator
                   requestCount={requestCount}
@@ -261,12 +295,18 @@ export default function UnifiedSearch({
                 variant="dominos-primary"
                 size="lg"
                 className="w-full h-12 sm:h-10 text-base sm:text-sm transition-all duration-200 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 touch-manipulation"
+                aria-describedby={loading ? "loading-status" : undefined}
               >
                 {loading ? 'Loading...' : 'Find Coupons'}
               </Button>
+              {loading && (
+                <p id="loading-status" className="sr-only" aria-live="polite">
+                  Searching for coupons, please wait
+                </p>
+              )}
             </form>
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md" role="alert">
                 <p className="text-red-600 text-sm leading-relaxed">{error}</p>
               </div>
             )}
@@ -275,36 +315,66 @@ export default function UnifiedSearch({
 
         {/* Find Nearby Tab */}
         {activeTab === 'find-nearby' && (
-          <div className="space-y-4">
+          <div 
+            id="find-nearby-panel"
+            role="tabpanel"
+            aria-labelledby="find-nearby-tab"
+            className="space-y-4"
+          >
             <form onSubmit={handleLocationSubmit} className="space-y-4">
-              <div className="space-y-4">
+              <fieldset className="space-y-4">
+                <legend className="sr-only">Enter your address to find nearby Domino's stores</legend>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Street Address</label>
+                  <label 
+                    htmlFor="street-address"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Street Address
+                  </label>
                   <Input
+                    id="street-address"
                     type="text"
                     placeholder="123 Main St"
                     value={street}
                     onChange={(e) => setStreet(e.target.value)}
                     className="w-full h-11 sm:h-9 text-base sm:text-sm focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue touch-manipulation"
+                    required
+                    autoComplete="street-address"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">City</label>
+                  <label 
+                    htmlFor="city"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    City
+                  </label>
                   <Input
+                    id="city"
                     type="text"
                     placeholder="City"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     className="w-full h-11 sm:h-9 text-base sm:text-sm focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue touch-manipulation"
+                    required
+                    autoComplete="address-level2"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">State</label>
+                    <label 
+                      htmlFor="state-select"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      State
+                    </label>
                     <select
+                      id="state-select"
                       value={state}
                       onChange={(e) => setState(e.target.value)}
                       className="flex h-11 sm:h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base sm:text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dominos-blue focus-visible:border-dominos-blue disabled:cursor-not-allowed disabled:opacity-50 touch-manipulation"
+                      required
+                      autoComplete="address-level1"
                     >
                       <option value="">Select State</option>
                       {US_STATES.map(stateOption => (
@@ -315,27 +385,41 @@ export default function UnifiedSearch({
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">ZIP Code</label>
+                    <label 
+                      htmlFor="zip-code"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      ZIP Code
+                    </label>
                     <Input
+                      id="zip-code"
                       type="text"
                       placeholder="12345"
                       value={zipCode}
                       onChange={(e) => setZipCode(e.target.value)}
                       className="w-full h-11 sm:h-9 text-base sm:text-sm focus:ring-2 focus:ring-dominos-blue focus:border-dominos-blue touch-manipulation"
                       maxLength={10}
+                      required
+                      autoComplete="postal-code"
                     />
                   </div>
                 </div>
-              </div>
+              </fieldset>
               <Button 
                 type="submit" 
                 disabled={locationLoading || !street.trim() || !city.trim() || !state || !zipCode.trim()}
                 variant="dominos-accent"
                 size="lg"
                 className="w-full h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
+                aria-describedby={locationLoading ? "location-loading-status" : undefined}
               >
                 {locationLoading ? 'Finding Stores...' : 'Find Stores'}
               </Button>
+              {locationLoading && (
+                <p id="location-loading-status" className="sr-only" aria-live="polite">
+                  Searching for nearby stores, please wait
+                </p>
+              )}
             </form>
 
             {locationError && (

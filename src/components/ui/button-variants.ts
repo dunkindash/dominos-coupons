@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority"
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:ring-offset-2 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
@@ -16,17 +16,17 @@ export const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
-        // Domino's Brand Button Variants
+        // Domino's Brand Button Variants - Enhanced for WCAG AA compliance
         "dominos-primary":
-          "bg-dominos-red text-white shadow-md hover:bg-dominos-red-hover focus-visible:ring-dominos-red/20 font-semibold",
+          "bg-dominos-red text-white shadow-md hover:bg-dominos-red-hover focus-visible:ring-dominos-red/30 focus-visible:ring-offset-2 font-semibold border border-transparent",
         "dominos-secondary":
-          "bg-white text-dominos-red border-2 border-dominos-red shadow-sm hover:bg-dominos-red hover:text-white focus-visible:ring-dominos-red/20 font-semibold",
+          "bg-white text-dominos-red border-2 border-dominos-red shadow-sm hover:bg-dominos-red hover:text-white focus-visible:ring-dominos-red/30 focus-visible:ring-offset-2 font-semibold",
         "dominos-accent":
-          "bg-dominos-blue text-white shadow-md hover:bg-dominos-blue-hover focus-visible:ring-dominos-blue/20 font-semibold",
+          "bg-dominos-blue text-white shadow-md hover:bg-dominos-blue-hover focus-visible:ring-dominos-blue/30 focus-visible:ring-offset-2 font-semibold border border-transparent",
         "dominos-ghost":
-          "text-dominos-red hover:bg-dominos-red/10 hover:text-dominos-red font-medium",
+          "text-dominos-red hover:bg-dominos-red/10 hover:text-dominos-red focus-visible:ring-dominos-red/30 focus-visible:ring-offset-2 font-medium border border-transparent",
         "dominos-blue-ghost":
-          "text-dominos-blue hover:bg-dominos-blue/10 hover:text-dominos-blue font-medium",
+          "text-dominos-blue hover:bg-dominos-blue/10 hover:text-dominos-blue focus-visible:ring-dominos-blue/30 focus-visible:ring-offset-2 font-medium border border-transparent",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

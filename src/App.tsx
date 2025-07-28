@@ -358,13 +358,36 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-white">
+        {/* Skip links for keyboard navigation */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-dominos-red focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-dominos-red"
+        >
+          Skip to main content
+        </a>
+        <a
+          href="#search-section"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-32 focus:z-50 focus:px-4 focus:py-2 focus:bg-dominos-red focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-dominos-red"
+        >
+          Skip to search
+        </a>
+        
         <EnhancedHeader />
         
         {/* Main content container with responsive grid */}
-        <div className="dominos-container py-4 sm:py-6 lg:py-8">
+        <main 
+          id="main-content"
+          className="dominos-container py-4 sm:py-6 lg:py-8"
+          role="main"
+          aria-label="Domino's Coupons Finder"
+        >
           
           {/* Search and Store Info Section - Card-based layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <section 
+            id="search-section"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
+            aria-label="Store search and information"
+          >
             {/* Search takes up 2 columns on large screens */}
             <div className="lg:col-span-2">
               <div className="dominos-card">
@@ -405,11 +428,15 @@ function App() {
                 </div>
               </div>
             )}
-          </div>
+          </section>
 
           {/* Coupons Display Section */}
           {processedCoupons.length > 0 && (
-            <div className="dominos-card mb-6 sm:mb-8">
+            <section 
+              id="coupons-section"
+              className="dominos-card mb-6 sm:mb-8"
+              aria-label={`${processedCoupons.length} available coupons`}
+            >
               <CouponDisplay
                 coupons={processedCoupons}
                 onCardToggle={toggleCardExpansion}
@@ -417,7 +444,7 @@ function App() {
                 viewMode={couponViewMode}
                 onViewModeChange={handleViewModeChange}
               />
-            </div>
+            </section>
           )}
 
           {/* Action Bar - Contextual actions for coupons */}
@@ -431,9 +458,12 @@ function App() {
 
           {/* Empty State - Updated for white background */}
           {processedCoupons.length === 0 && !loading && !error && (
-            <div className="dominos-card text-center py-12 sm:py-16">
+            <section 
+              className="dominos-card text-center py-12 sm:py-16"
+              aria-label="Getting started instructions"
+            >
               <div className="mb-6 sm:mb-8">
-                <div className="text-6xl sm:text-8xl mb-4">🍕</div>
+                <div className="text-6xl sm:text-8xl mb-4" role="img" aria-label="Pizza emoji">🍕</div>
                 <h2 className="dominos-heading-lg text-gray-900 mb-2 px-4">
                   Ready to Find Great Deals?
                 </h2>
@@ -443,19 +473,19 @@ function App() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center text-gray-600 px-4">
                 <div className="flex items-center gap-2">
-                  <div className="text-xl sm:text-2xl">🏪</div>
+                  <div className="text-xl sm:text-2xl" role="img" aria-label="Store icon">🏪</div>
                   <span className="text-sm">Enter store number directly</span>
                 </div>
-                <div className="text-gray-400 hidden sm:block">or</div>
-                <div className="text-gray-400 sm:hidden">or</div>
+                <div className="text-gray-400 hidden sm:block" aria-hidden="true">or</div>
+                <div className="text-gray-400 sm:hidden" aria-hidden="true">or</div>
                 <div className="flex items-center gap-2">
-                  <div className="text-xl sm:text-2xl">📍</div>
+                  <div className="text-xl sm:text-2xl" role="img" aria-label="Location pin icon">📍</div>
                   <span className="text-sm">Search by your address</span>
                 </div>
               </div>
-            </div>
+            </section>
           )}
-        </div>
+        </main>
 
         {/* Email Modal */}
         <EmailErrorBoundary>

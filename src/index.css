@@ -218,4 +218,75 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  
+  /* Accessibility improvements */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .dominos-card {
+      @apply border-2 border-gray-800;
+    }
+    
+    .bg-dominos-red {
+      background-color: #cc0000 !important;
+    }
+    
+    .bg-dominos-blue {
+      background-color: #000080 !important;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Focus visible improvements */
+  .focus-visible\:ring-dominos-red\/30:focus-visible {
+    --tw-ring-color: hsl(var(--dominos-red) / 0.3);
+  }
+  
+  .focus-visible\:ring-dominos-blue\/30:focus-visible {
+    --tw-ring-color: hsl(var(--dominos-blue) / 0.3);
+  }
+  
+  /* Ensure minimum touch target size */
+  .touch-manipulation {
+    touch-action: manipulation;
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  @media (max-width: 640px) {
+    .touch-manipulation {
+      min-height: 48px;
+      min-width: 48px;
+    }
+  }
 }

@@ -64,7 +64,10 @@ export const ViewSelector = memo(function ViewSelector({
     )}>
       {/* Coupon count and description */}
       <div className="flex-1 min-w-0">
-        <h3 className="dominos-heading-sm text-dominos-red mb-1 transition-colors duration-200">
+        <h3 
+          id="coupon-count-heading"
+          className="dominos-heading-sm text-dominos-red mb-1 transition-colors duration-200"
+        >
           🎟️ {couponCount} {couponCount === 1 ? 'Coupon' : 'Coupons'} Available
         </h3>
         <p className="dominos-caption hidden sm:block text-gray-600">
@@ -73,7 +76,12 @@ export const ViewSelector = memo(function ViewSelector({
       </div>
 
       {/* View toggle buttons */}
-      <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg transition-all duration-200">
+      <div 
+        className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg transition-all duration-200"
+        role="group"
+        aria-labelledby="coupon-count-heading"
+        aria-label="Choose coupon display view"
+      >
         <Button
           variant={currentView === 'grid' ? 'dominos-primary' : 'ghost'}
           size="sm"
@@ -84,8 +92,9 @@ export const ViewSelector = memo(function ViewSelector({
               ? "bg-dominos-red text-white shadow-sm scale-105" 
               : "text-gray-600 hover:text-dominos-red hover:bg-white hover:scale-105"
           )}
-          aria-label="Grid view"
+          aria-label={`Switch to grid view${currentView === 'grid' ? ' (currently selected)' : ''}`}
           aria-pressed={currentView === 'grid'}
+          type="button"
         >
           <GridIcon className={cn(
             "transition-all duration-300",
@@ -104,8 +113,9 @@ export const ViewSelector = memo(function ViewSelector({
               ? "bg-dominos-red text-white shadow-sm scale-105" 
               : "text-gray-600 hover:text-dominos-red hover:bg-white hover:scale-105"
           )}
-          aria-label="List view"
+          aria-label={`Switch to list view${currentView === 'list' ? ' (currently selected)' : ''}`}
           aria-pressed={currentView === 'list'}
+          type="button"
         >
           <ListIcon className={cn(
             "transition-all duration-300",
