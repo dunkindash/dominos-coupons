@@ -1,0 +1,22 @@
+# CODEOWNERS file for automated review requests
+# Each line is a file pattern followed by one or more owners
+
+# Global owners for all files
+* @dunkindash
+
+# API endpoints require security review
+/api/ @dunkindash
+/api/**/*.js @dunkindash
+
+# Security-sensitive files
+*.env* @dunkindash
+/src/lib/security.ts @dunkindash
+/src/components/PasswordProtection.tsx @dunkindash
+SECURITY.md @dunkindash
+
+# Configuration files
+package.json @dunkindash
+package-lock.json @dunkindash
+tsconfig.json @dunkindash
+vite.config.ts @dunkindash
+vercel.json @dunkindash
