@@ -4,8 +4,8 @@ import type { StoreInfo } from "@/types/dominos"
 import type { Coupon } from "@/types/dominos"
 import PasswordProtection from './components/PasswordProtection'
 import UnifiedSearch from './components/UnifiedSearch'
-import EmailCouponsButton from './components/EmailCouponsButton'
 import EnhancedHeader from './components/layout/EnhancedHeader'
+import ActionBar from './components/ActionBar'
 
 import StoreInfoCard from './components/store/StoreInfoCard'
 import CouponDisplay from './components/coupon/CouponDisplay'
@@ -401,23 +401,14 @@ function App() {
             </div>
           )}
 
-          {/* Email Button - Sticky positioning with card styling */}
-          {processedCoupons.length > 0 && (
-            <div className="sticky bottom-4 z-40">
-              <div className="flex justify-center px-4">
-                <div className="max-w-sm w-full">
-                  <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4">
-                    <EmailErrorBoundary>
-                      <EmailCouponsButton
-                        coupons={processedCoupons}
-                        onClick={handleEmailButtonClick}
-                      />
-                    </EmailErrorBoundary>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Action Bar - Contextual actions for coupons */}
+          <EmailErrorBoundary>
+            <ActionBar
+              visible={processedCoupons.length > 0}
+              coupons={processedCoupons}
+              onEmailCoupons={handleEmailButtonClick}
+            />
+          </EmailErrorBoundary>
 
           {/* Empty State - Updated for white background */}
           {processedCoupons.length === 0 && !loading && !error && (
