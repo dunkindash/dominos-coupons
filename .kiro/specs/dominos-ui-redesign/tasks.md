@@ -42,6 +42,27 @@
   - Implement hover effects and better interaction feedback
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
+- [x] 6.1 Implement view selector component for coupon display modes
+  - Create ViewSelector component with toggle buttons for grid and list views
+  - Add grid and list icons with clear visual indication of active mode
+  - Style component with Domino's branding and ensure mobile responsiveness
+  - Position selector above coupon display area with proper spacing
+  - _Requirements: 5.5_
+
+- [x] 6.2 Add list view layout for coupon display
+  - Implement list view layout as alternative to existing grid view
+  - Create compact horizontal layout optimized for detailed comparison
+  - Maintain visual hierarchy and key information prominence in list format
+  - Ensure responsive behavior and mobile optimization for list view
+  - _Requirements: 5.6_
+
+- [x] 6.3 Integrate view selector with coupon display state management
+  - Add view mode state management to main app component
+  - Connect ViewSelector component to coupon display state
+  - Implement smooth transitions between grid and list view modes
+  - Persist user's view preference in localStorage for better UX
+  - _Requirements: 5.5, 5.6_
+
 - [x] 7. Create contextual action bar for coupon actions
   - Build ActionBar component with sticky positioning when coupons are visible
   - Integrate email functionality button with improved visibility and accessibility

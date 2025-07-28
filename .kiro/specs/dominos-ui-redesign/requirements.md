@@ -61,6 +61,8 @@ This feature involves redesigning the main interface of the Domino's Coupons Fin
 2. WHEN viewing individual coupons THEN the most important information SHALL be prominently displayed
 3. WHEN scanning multiple coupons THEN visual hierarchy SHALL help me quickly identify key details like savings and restrictions
 4. WHEN coupons have different categories or types THEN they SHALL be visually distinguished or grouped appropriately
+5. WHEN I want to change how coupons are displayed THEN I SHALL be able to toggle between card view and list view
+6. WHEN I select a different view mode THEN the coupons SHALL be displayed in the chosen format while maintaining all functionality
 
 ### Requirement 6
 

@@ -94,6 +94,14 @@ function App() {
   })
   const [, setTick] = useState(0) // Force re-render for timer
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
+  const [couponViewMode, setCouponViewMode] = useState<'grid' | 'list'>(() => {
+    try {
+      return (localStorage.getItem('couponViewMode') as 'grid' | 'list') || 'grid'
+    } catch (error) {
+      console.warn('Failed to load view mode preference from localStorage:', error)
+      return 'grid'
+    }
+  })
 
   // Memoize processed coupons to avoid recalculation
   const processedCoupons = useMemo(() => {
@@ -306,6 +314,15 @@ function App() {
     })
   }, [])
 
+  const handleViewModeChange = useCallback((mode: 'grid' | 'list') => {
+    setCouponViewMode(mode)
+    try {
+      localStorage.setItem('couponViewMode', mode)
+    } catch (error) {
+      console.warn('Failed to save view mode preference to localStorage:', error)
+    }
+  }, [])
+
   const handleEmailButtonClick = useCallback(() => {
     setIsEmailModalOpen(true)
   }, [])
@@ -397,6 +414,8 @@ function App() {
                 coupons={processedCoupons}
                 onCardToggle={toggleCardExpansion}
                 expandedCards={expandedCards}
+                viewMode={couponViewMode}
+                onViewModeChange={handleViewModeChange}
               />
             </div>
           )}

@@ -1,12 +1,15 @@
 import { useMemo, memo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ViewSelector } from "./ViewSelector"
 import type { Coupon } from "@/types/dominos"
 
 interface CouponDisplayProps {
     coupons: Coupon[]
     onCardToggle: (cardId: string) => void
     expandedCards: Set<string>
+    viewMode?: 'grid' | 'list'
+    onViewModeChange?: (mode: 'grid' | 'list') => void
 }
 
 // Enhanced coupon categorization for better visual organization
@@ -183,11 +186,12 @@ function extractMenuItemHints(description: string): string[] {
     return [...new Set(hints)].slice(0, 3) // Limit to 3 most relevant hints
 }
 
-const CouponCard = memo(function CouponCard({ coupon, index, isExpanded, onToggle }: {
+const CouponCard = memo(function CouponCard({ coupon, index, isExpanded, onToggle, viewMode = 'grid' }: {
     coupon: Coupon
     index: number
     isExpanded: boolean
     onToggle: () => void
+    viewMode?: 'grid' | 'list'
 }) {
     const cardId = coupon.Code || coupon.ID || `coupon-${index}`
     
@@ -199,6 +203,208 @@ const CouponCard = memo(function CouponCard({ coupon, index, isExpanded, onToggl
         return textToAnalyze ? extractMenuItemHints(textToAnalyze) : []
     }, [coupon.Name, coupon.Description])
 
+    // List view layout
+    if (viewMode === 'list') {
+        return (
+            <Card 
+                key={cardId} 
+                className={`
+                    group relative overflow-hidden transition-all duration-300 ease-out
+                    hover:shadow-lg hover:scale-[1.01]
+                    active:scale-[0.99] active:shadow-md
+                    cursor-pointer
+                    ${category.borderColor} border-l-4 border-y border-r
+                    bg-white hover:bg-gray-50/50
+                    transform-gpu will-change-transform
+                    touch-manipulation
+                `}
+                onClick={onToggle}
+            >
+                <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                        {/* Left: Savings Badge */}
+                        <div className="flex-shrink-0">
+                            <div className={`
+                                inline-flex items-center gap-1 px-3 py-2 rounded-lg
+                                ${savings.type === 'dollar' ? 'bg-green-100 text-green-800' : 
+                                  savings.type === 'percent' ? 'bg-orange-100 text-orange-800' : 
+                                  'bg-dominos-red text-white'}
+                                font-bold text-sm shadow-sm
+                                transition-all duration-200 group-hover:scale-105
+                                min-w-[80px] justify-center
+                            `}>
+                                <span className="text-xs">
+                                    {savings.type === 'dollar' && '💰'}
+                                    {savings.type === 'percent' && '🎯'}
+                                    {savings.type === 'price' && '💵'}
+                                </span>
+                                <span className="text-base font-bold">{savings.amount}</span>
+                                {savings.type !== 'price' && <span className="text-xs">OFF</span>}
+                            </div>
+                        </div>
+
+                        {/* Center: Main Content */}
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-bold text-gray-900 text-base leading-tight mb-1 truncate">
+                                        {coupon.Name || 'Special Offer'}
+                                    </h3>
+                                    <p className="text-gray-600 text-sm leading-relaxed mb-2 line-clamp-2">
+                                        {coupon.Description}
+                                    </p>
+                                    
+                                    {/* Key attributes in compact format */}
+                                    <div className="flex flex-wrap gap-1 mb-2">
+                                        <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                                            Code: {coupon.Code}
+                                        </span>
+                                        {coupon.VirtualCode && (
+                                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                                                Online: {coupon.VirtualCode}
+                                            </span>
+                                        )}
+                                        {coupon.MinimumOrder && (
+                                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
+                                                Min: ${String(coupon.MinimumOrder)}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Service methods */}
+                                    {coupon.ValidServiceMethods && Array.isArray(coupon.ValidServiceMethods) && coupon.ValidServiceMethods.length > 0 && (
+                                        <div className="flex flex-wrap gap-1">
+                                            {coupon.ValidServiceMethods.map((method, index) => (
+                                                <span key={index} className="px-2 py-1 bg-dominos-blue/10 text-dominos-blue rounded text-xs font-medium">
+                                                    {method === 'Carryout' ? '🏪' :
+                                                        method === 'Delivery' ? '🚚' :
+                                                            method === 'Carside' ? '🚗' :
+                                                                method === 'Hotspot' ? '📍' : ''}
+                                                    {method}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Right: Category and Action */}
+                                <div className="flex-shrink-0 flex flex-col items-end gap-2">
+                                    {/* Category badge */}
+                                    <span className={`
+                                        px-2 py-1 rounded-full text-xs font-bold
+                                        ${category.color} ${category.bgColor}
+                                        shadow-sm border ${category.borderColor}
+                                        transition-all duration-200 group-hover:scale-105
+                                        flex items-center gap-1
+                                    `}>
+                                        {category.icon}
+                                        <span className="hidden sm:inline">{category.name}</span>
+                                    </span>
+
+                                    {/* Expiration */}
+                                    <div className="text-xs text-gray-500 text-right">
+                                        {coupon.ExpirationDate ? (
+                                            `Expires: ${new Date(coupon.ExpirationDate).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric'
+                                            })}`
+                                        ) : (
+                                            'Check store'
+                                        )}
+                                    </div>
+
+                                    {/* Action button */}
+                                    <Button
+                                        size="sm"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            onToggle()
+                                        }}
+                                        className={`
+                                            h-8 px-3 text-xs font-medium transition-all duration-200
+                                            bg-dominos-red hover:bg-dominos-red-hover text-white
+                                            shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]
+                                            border-0 focus:ring-2 focus:ring-dominos-red/50
+                                            touch-manipulation
+                                        `}
+                                    >
+                                        {isExpanded ? 'Hide' : 'Details'}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            {/* Expanded Details for List View */}
+                            {isExpanded && (
+                                <div className="mt-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200 animate-in slide-in-from-top-2 duration-200">
+                                    {/* Menu Item Hints */}
+                                    {menuItemHints.length > 0 && (
+                                        <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                                            <h4 className="font-semibold text-sm mb-2 text-green-800">🍕 Includes:</h4>
+                                            <div className="flex flex-wrap gap-1">
+                                                {menuItemHints.map((hint, index) => (
+                                                    <span key={index} className="px-2 py-1 bg-white text-green-700 rounded text-xs font-medium border border-green-200 capitalize">
+                                                        {hint}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Additional attributes */}
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {coupon.Local === 'true' && (
+                                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium shadow-sm border border-blue-200">
+                                                📍 Local Offer
+                                            </span>
+                                        )}
+                                        {(coupon.Bundle === 'true' || coupon.Bundle === true) && (
+                                            <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium shadow-sm border border-orange-200">
+                                                📦 Bundle Deal
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Eligible Items */}
+                                    {(coupon.EligibleProducts || coupon.EligibleCategories) && (
+                                        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                            <h4 className="font-semibold text-sm mb-2 text-blue-800">📋 Eligible Items:</h4>
+                                            {coupon.EligibleCategories && Array.isArray(coupon.EligibleCategories) && (
+                                                <div className="mb-2">
+                                                    <span className="text-xs font-medium text-blue-600">Categories: </span>
+                                                    <span className="text-xs text-blue-700">{coupon.EligibleCategories.join(', ')}</span>
+                                                </div>
+                                            )}
+                                            {coupon.EligibleProducts && Array.isArray(coupon.EligibleProducts) && (
+                                                <div>
+                                                    <span className="text-xs font-medium text-blue-600">Products: </span>
+                                                    <span className="text-xs text-blue-700">{coupon.EligibleProducts.join(', ')}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* All Fields Debug Info */}
+                                    <h4 className="font-semibold text-sm mb-3 text-gray-800">🔍 All Fields:</h4>
+                                    <div className="grid grid-cols-1 gap-2 text-xs max-h-48 overflow-y-auto">
+                                        {Object.entries(coupon).map(([key, value]) => (
+                                            <div key={key} className="flex justify-between py-1 border-b border-gray-200 last:border-b-0">
+                                                <span className="font-medium text-gray-600">{key}:</span>
+                                                <span className="text-gray-800 break-all max-w-xs text-right">
+                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    // Grid view layout (existing)
     return (
         <Card 
             key={cardId} 
@@ -422,7 +628,13 @@ const CouponCard = memo(function CouponCard({ coupon, index, isExpanded, onToggl
     )
 })
 
-export const CouponDisplay = memo(function CouponDisplay({ coupons, onCardToggle, expandedCards }: CouponDisplayProps) {
+export const CouponDisplay = memo(function CouponDisplay({ 
+    coupons, 
+    onCardToggle, 
+    expandedCards, 
+    viewMode = 'grid',
+    onViewModeChange 
+}: CouponDisplayProps) {
     // Enhanced categorization and sorting
     const categorizedCoupons = useMemo(() => {
         const categorized = new Map<string, Coupon[]>()
@@ -484,6 +696,15 @@ export const CouponDisplay = memo(function CouponDisplay({ coupons, onCardToggle
                 </div>
             </div>
 
+            {/* View Selector */}
+            {onViewModeChange && (
+                <ViewSelector
+                    currentView={viewMode}
+                    onViewChange={onViewModeChange}
+                    couponCount={coupons.length}
+                />
+            )}
+
             {/* Categorized Coupons */}
             {categorizedCoupons.map(({ category, coupons: categoryCoupons }) => (
                 <div key={category.name} className="mb-8">
@@ -499,22 +720,47 @@ export const CouponDisplay = memo(function CouponDisplay({ coupons, onCardToggle
                         </div>
                     )}
                     
-                    {/* Enhanced Grid Layout with Consistent Card Sizing - Responsive */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 auto-rows-fr">
-                        {categoryCoupons.map((coupon, index) => {
-                            const cardId = coupon.Code || coupon.ID || `${category.name}-${index}`
-                            const isExpanded = expandedCards.has(cardId)
+                    {/* Grid or List Layout based on viewMode with smooth transitions */}
+                    <div key={`${category.name}-${viewMode}`} className="transition-all duration-300 ease-in-out">
+                        {viewMode === 'grid' ? (
+                            /* Enhanced Grid Layout with Consistent Card Sizing - Responsive */
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 auto-rows-fr animate-in fade-in-0 duration-300">
+                                {categoryCoupons.map((coupon, index) => {
+                                    const cardId = coupon.Code || coupon.ID || `${category.name}-${index}`
+                                    const isExpanded = expandedCards.has(cardId)
 
-                            return (
-                                <CouponCard
-                                    key={cardId}
-                                    coupon={coupon}
-                                    index={index}
-                                    isExpanded={isExpanded}
-                                    onToggle={() => onCardToggle(cardId)}
-                                />
-                            )
-                        })}
+                                    return (
+                                        <CouponCard
+                                            key={`${cardId}-grid`}
+                                            coupon={coupon}
+                                            index={index}
+                                            isExpanded={isExpanded}
+                                            onToggle={() => onCardToggle(cardId)}
+                                            viewMode="grid"
+                                        />
+                                    )
+                                })}
+                            </div>
+                        ) : (
+                            /* List Layout - Compact horizontal layout optimized for detailed comparison */
+                            <div className="space-y-2 animate-in fade-in-0 duration-300">
+                                {categoryCoupons.map((coupon, index) => {
+                                    const cardId = coupon.Code || coupon.ID || `${category.name}-${index}`
+                                    const isExpanded = expandedCards.has(cardId)
+
+                                    return (
+                                        <CouponCard
+                                            key={`${cardId}-list`}
+                                            coupon={coupon}
+                                            index={index}
+                                            isExpanded={isExpanded}
+                                            onToggle={() => onCardToggle(cardId)}
+                                            viewMode="list"
+                                        />
+                                    )
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             ))}

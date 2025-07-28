@@ -87,23 +87,32 @@ interface StoreResultsProps {
 }
 ```
 
-### 4. Enhanced Coupon Grid
+### 4. Enhanced Coupon Display with View Selector
 
-**Purpose**: Present coupons in a visually appealing, organized manner
+**Purpose**: Present coupons in a visually appealing, organized manner with user-selectable view modes
 
 **Design Specifications**:
-- Grid layout with consistent card sizing
-- Visual hierarchy: savings amount, description, restrictions
+- **Grid View**: Card-based layout with consistent sizing, optimal for visual scanning
+- **List View**: Compact horizontal layout, optimal for detailed comparison
+- Visual hierarchy maintained in both views: savings amount, description, restrictions
 - Color-coded categories or deal types
 - Hover effects and interaction feedback
-- Mobile-responsive stacking
+- Mobile-responsive behavior for both view modes
+- View selector toggle prominently placed above coupon display
 
 **Interface**:
 ```typescript
-interface EnhancedCouponGridProps {
+interface EnhancedCouponDisplayProps {
   coupons: ProcessedCoupon[]
   onCouponSelect?: (coupon: ProcessedCoupon) => void
-  viewMode?: 'grid' | 'list'
+  viewMode: 'grid' | 'list'
+  onViewModeChange: (mode: 'grid' | 'list') => void
+}
+
+interface ViewSelectorProps {
+  currentView: 'grid' | 'list'
+  onViewChange: (view: 'grid' | 'list') => void
+  couponCount: number
 }
 ```
 
@@ -179,7 +188,29 @@ interface UIState {
   searchMode: 'store-number' | 'location'
   currentView: 'search' | 'results' | 'coupons'
   selectedStore: EnhancedStoreInfo | null
-  viewMode: 'grid' | 'list'
+  couponViewMode: 'grid' | 'list'
+}
+```
+
+### View Selector Component
+
+**Purpose**: Allow users to toggle between different coupon display modes
+
+**Design Specifications**:
+- Toggle button group with grid and list icons
+- Clear visual indication of active view mode
+- Positioned above coupon display area
+- Responsive design that works on mobile
+- Branded styling consistent with Domino's design system
+- Smooth transitions between view modes
+
+**Interface**:
+```typescript
+interface ViewSelectorProps {
+  currentView: 'grid' | 'list'
+  onViewChange: (view: 'grid' | 'list') => void
+  couponCount: number
+  className?: string
 }
 ```
 
