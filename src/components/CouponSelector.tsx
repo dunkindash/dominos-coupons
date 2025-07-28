@@ -51,7 +51,7 @@ export default function CouponSelector({
   return (
     <div className="space-y-3">
       {/* Select All / Deselect All Controls */}
-      <div className="sticky top-0 bg-white z-10 flex items-center justify-between py-3 px-4 border-b-2 border-gray-200">
+      <div className="sticky top-0 bg-gray-50 z-10 flex items-center justify-between py-3 px-4 border-b border-gray-200">
         <span className="text-sm font-medium text-gray-600">
           {selectedCoupons.length} of {coupons.length} selected
         </span>
@@ -67,7 +67,7 @@ export default function CouponSelector({
       </div>
 
       {/* Coupon List */}
-      <div className="space-y-2 p-3">
+      <div className="space-y-3 p-4">
         {coupons.map((coupon) => {
           const couponId = getCouponId(coupon)
           const isSelected = selectedCoupons.includes(couponId)
@@ -78,9 +78,9 @@ export default function CouponSelector({
             <label
               key={couponId}
               className={cn(
-                "flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all touch-manipulation bg-white",
-                "hover:border-[#006491]/30 hover:shadow-sm",
-                isSelected && "bg-blue-50 border-[#006491] shadow-sm"
+                "flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all touch-manipulation bg-white",
+                "hover:border-[#006491]/50 hover:shadow-md",
+                isSelected && "bg-blue-50 border-[#006491] shadow-md"
               )}
             >
               <input

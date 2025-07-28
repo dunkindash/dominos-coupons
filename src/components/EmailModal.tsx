@@ -81,8 +81,8 @@ export default function EmailModal({
       aria-modal="true"
       aria-labelledby="email-modal-title"
     >
-      <Card className="w-full sm:max-w-lg max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col rounded-b-none sm:rounded-b-lg animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 shadow-2xl border-0">
-        <CardHeader className="flex-shrink-0 bg-gradient-to-r from-[#006491] to-[#0087c3] text-white pb-4">
+      <Card className="w-full sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col rounded-b-none sm:rounded-b-lg animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 shadow-2xl border-0 bg-gradient-to-r from-[#006491] to-[#0087c3]">
+        <CardHeader className="flex-shrink-0 text-white pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -129,7 +129,7 @@ export default function EmailModal({
         </CardHeader>
 
         <form onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <CardContent className="space-y-4 flex-1 overflow-y-auto px-4 sm:px-6">
+          <CardContent className="space-y-6 flex-1 overflow-y-auto px-6 sm:px-8 py-6 bg-white">
             {/* Success Message */}
             {uiState.successMessage && (
               <div className="p-4 rounded-lg bg-green-50 border-2 border-green-200 shadow-sm" role="status" aria-live="polite">
@@ -242,7 +242,7 @@ export default function EmailModal({
                   {formState.selectedCoupons.length} of {coupons.length} selected
                 </span>
               </div>
-              <div className="max-h-[40vh] sm:max-h-[35vh] overflow-y-auto border-2 border-gray-200 rounded-lg bg-gray-50">
+              <div className="max-h-[50vh] sm:max-h-[45vh] overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-inner">
                 <CouponSelector
                   coupons={coupons}
                   selectedCoupons={formState.selectedCoupons}
