@@ -33,7 +33,7 @@ Visit the app: [https://dominos.techbrew.dev](https://dominos.techbrew.dev)
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
