@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import StoreResults from "@/components/store/StoreResults"
 
 interface Store {
   storeId: string
@@ -151,11 +152,12 @@ export default function StoreFinder({ onStoreSelect, onRateLimitUpdate }: StoreF
   }
 
   return (
-    <Card className="flex-1 max-w-md mx-auto lg:mx-0 shadow-lg border-0">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold">Find Nearby Stores</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div>
+      <Card className="flex-1 max-w-md mx-auto lg:mx-0 shadow-lg border-0">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold">Find Nearby Stores</CardTitle>
+        </CardHeader>
+        <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-3">
             <Input
@@ -197,8 +199,9 @@ export default function StoreFinder({ onStoreSelect, onRateLimitUpdate }: StoreF
           </div>
           <Button 
             type="submit" 
+            variant="dominos-primary"
             disabled={loading || !street.trim() || !city.trim() || !state || !zipCode.trim()}
-            className="w-full !bg-blue-600 hover:!bg-blue-700 !text-white"
+            className="w-full"
           >
             {loading ? 'Finding Stores...' : 'Find Stores'}
           </Button>
@@ -219,56 +222,20 @@ export default function StoreFinder({ onStoreSelect, onRateLimitUpdate }: StoreF
           </div>
         )}
 
-        {hasSearched && !loading && stores.length === 0 && !error && (
-          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-            <div className="text-center">
-              <p className="text-gray-600 text-sm">No nearby stores found</p>
-              <p className="text-gray-500 text-xs mt-1">
-                Try entering a different address or check if the area is served by Domino's
-              </p>
-            </div>
-          </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {stores.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <h3 className="font-semibold text-sm text-gray-700">
-              Found {stores.length} nearby stores:
-            </h3>
-            <div className="max-h-60 overflow-y-auto space-y-2">
-              {stores.map((store) => (
-                <div
-                  key={store.storeId}
-                  className="p-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
-                  onClick={() => onStoreSelect(store.storeId)}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">Store #{store.storeId}</div>
-                      <div className="text-xs text-gray-600 mt-1">{store.address}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        📞 {store.phone} • 📍 {store.distance.toFixed(1)} miles
-                      </div>
-                      {store.deliveryMinutes && (
-                        <div className="text-xs text-green-600 mt-1">
-                          🚚 ~{store.deliveryMinutes} min delivery
-                        </div>
-                      )}
-                    </div>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      store.isOpen 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {store.isOpen ? 'Open' : 'Closed'}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Store Results Section */}
+      {(hasSearched || stores.length > 0) && (
+        <div className="mt-6">
+          <StoreResults
+            stores={stores}
+            onStoreSelect={onStoreSelect}
+            loading={loading}
+            searchLocation={hasSearched ? `${street}, ${city}, ${state} ${zipCode}` : undefined}
+          />
+        </div>
+      )}
+    </div>
   )
 }
