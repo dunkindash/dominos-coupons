@@ -10,20 +10,28 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 78% 56%;  /* Domino's Red #e61838 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 0 78% 56%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 201 100% 29%;  /* Domino's Blue #016593 */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 0 78% 56%;  /* Domino's Red for focus rings */
     --radius: 0.5rem;
+    
+    /* Domino's Brand Colors */
+    --dominos-red: 0 78% 56%;  /* #e61838 */
+    --dominos-red-foreground: 0 0% 100%;
+    --dominos-blue: 201 100% 29%;  /* #016593 */
+    --dominos-blue-foreground: 0 0% 100%;
+    --dominos-red-hover: 0 78% 50%;  /* Slightly darker red for hover */
+    --dominos-blue-hover: 201 100% 25%;  /* Slightly darker blue for hover */
   }
 
   .dark {
@@ -55,5 +63,106 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Domino's Brand Typography */
+  .dominos-heading {
+    @apply font-bold text-gray-900 leading-tight;
+  }
+  
+  .dominos-heading-xl {
+    @apply dominos-heading text-3xl md:text-4xl;
+  }
+  
+  .dominos-heading-lg {
+    @apply dominos-heading text-2xl md:text-3xl;
+  }
+  
+  .dominos-heading-md {
+    @apply dominos-heading text-xl md:text-2xl;
+  }
+  
+  .dominos-heading-sm {
+    @apply dominos-heading text-lg md:text-xl;
+  }
+  
+  .dominos-subheading {
+    @apply text-gray-600 font-medium leading-relaxed;
+  }
+  
+  .dominos-body {
+    @apply text-gray-700 leading-relaxed;
+  }
+  
+  .dominos-caption {
+    @apply text-sm text-gray-500 leading-normal;
+  }
+  
+  /* Domino's Brand Colors */
+  .bg-dominos-red {
+    background-color: hsl(var(--dominos-red));
+  }
+  
+  .bg-dominos-blue {
+    background-color: hsl(var(--dominos-blue));
+  }
+  
+  .text-dominos-red {
+    color: hsl(var(--dominos-red));
+  }
+  
+  .text-dominos-blue {
+    color: hsl(var(--dominos-blue));
+  }
+  
+  .border-dominos-red {
+    border-color: hsl(var(--dominos-red));
+  }
+  
+  .border-dominos-blue {
+    border-color: hsl(var(--dominos-blue));
+  }
+  
+  .hover\:bg-dominos-red-hover:hover {
+    background-color: hsl(var(--dominos-red-hover));
+  }
+  
+  .hover\:bg-dominos-blue-hover:hover {
+    background-color: hsl(var(--dominos-blue-hover));
+  }
+  
+  /* Domino's Brand Spacing */
+  .dominos-spacing-xs {
+    @apply space-y-2;
+  }
+  
+  .dominos-spacing-sm {
+    @apply space-y-4;
+  }
+  
+  .dominos-spacing-md {
+    @apply space-y-6;
+  }
+  
+  .dominos-spacing-lg {
+    @apply space-y-8;
+  }
+  
+  .dominos-spacing-xl {
+    @apply space-y-12;
+  }
+  
+  .dominos-container {
+    @apply max-w-6xl mx-auto px-4;
+  }
+  
+  .dominos-card {
+    @apply bg-white rounded-lg shadow-md border border-gray-200 p-6;
+  }
+  
+  .dominos-card-compact {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
   }
 }

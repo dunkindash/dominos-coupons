@@ -1,14 +1,12 @@
 import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react'
 import type { StoreInfo } from "@/types/dominos"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+
 import type { Coupon } from "@/types/dominos"
 import PasswordProtection from './components/PasswordProtection'
-import StoreFinder from './components/StoreFinder'
+import UnifiedSearch from './components/UnifiedSearch'
 import EmailCouponsButton from './components/EmailCouponsButton'
-import AppHeader from './components/layout/AppHeader'
-import RateLimitIndicator from './components/common/RateLimitIndicator'
+import EnhancedHeader from './components/layout/EnhancedHeader'
+
 import StoreInfoCard from './components/store/StoreInfoCard'
 import CouponDisplay from './components/coupon/CouponDisplay'
 import ErrorBoundary from './components/common/ErrorBoundary'
@@ -294,10 +292,7 @@ function App() {
     }
   }, [storeId, language, firstRequestTime])
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault()
-    fetchCoupons()
-  }, [fetchCoupons])
+
 
   const toggleCardExpansion = useCallback((cardId: string) => {
     setExpandedCards(prev => {
@@ -345,67 +340,12 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-blue-600 p-4">
-        <div className="max-w-6xl mx-auto">
-          <AppHeader />
+      <div className="min-h-screen bg-blue-600">
+        <EnhancedHeader />
+        <div className="max-w-6xl mx-auto p-4">
 
           <div className="flex flex-col lg:flex-row gap-6 mb-8">
-            <Card className="flex-1 max-w-sm mx-auto lg:mx-0 shadow-lg border-0">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold">Store Search</CardTitle>
-                <p className="text-sm text-gray-600">Enter store number directly</p>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Language</label>
-                      <select
-                        value={language}
-                        onChange={(e) => {
-                          setLanguage(e.target.value)
-                          localStorage.setItem('selectedLanguage', e.target.value)
-                        }}
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value="en">English</option>
-                        <option value="es">Español</option>
-                      </select>
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder="Enter store number (e.g., 7046)"
-                      value={storeId}
-                      onChange={(e) => {
-                        setStoreId(e.target.value)
-                        localStorage.setItem('lastStoreId', e.target.value)
-                      }}
-                      className="w-full transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <RateLimitIndicator
-                      requestCount={requestCount}
-                      maxRequests={5}
-                      firstRequestTime={firstRequestTime}
-                      windowMinutes={10}
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    disabled={loading || !storeId} 
-                    className="w-full !bg-red-600 hover:!bg-red-700 !text-white !border-0 transition-all duration-200 font-medium shadow-md hover:shadow-lg disabled:opacity-50"
-                  >
-                    {loading ? 'Loading...' : 'Find Coupons'}
-                  </Button>
-                </form>
-                {error && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <StoreFinder 
+            <UnifiedSearch
               onStoreSelect={(selectedStoreId) => {
                 setStoreId(selectedStoreId)
                 localStorage.setItem('lastStoreId', selectedStoreId)
@@ -420,6 +360,16 @@ function App() {
                   firstRequestTime: newFirstRequestTime
                 }))
               }}
+              currentLanguage={language}
+              onLanguageChange={(newLanguage) => {
+                setLanguage(newLanguage)
+                localStorage.setItem('selectedLanguage', newLanguage)
+              }}
+              requestCount={requestCount}
+              firstRequestTime={firstRequestTime}
+              onFetchCoupons={fetchCoupons}
+              loading={loading}
+              error={error}
             />
 
             {storeInfo && <StoreInfoCard storeInfo={storeInfo} />}

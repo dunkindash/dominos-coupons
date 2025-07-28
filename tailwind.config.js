@@ -40,7 +40,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Domino's brand colors
+        // Domino's brand colors (palette)
         'dominos-blue': {
           50: '#f0f8ff',
           100: '#e1f2fe',
@@ -65,11 +65,24 @@ export default {
           800: '#991b1b',
           900: '#7f1d1d',
         },
+        // CSS custom property colors for design system
+        'dominos-red-brand': 'hsl(var(--dominos-red))',
+        'dominos-blue-brand': 'hsl(var(--dominos-blue))',
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        'dominos': ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+      },
+      spacing: {
+        'dominos-xs': '0.5rem',
+        'dominos-sm': '1rem',
+        'dominos-md': '1.5rem',
+        'dominos-lg': '2rem',
+        'dominos-xl': '3rem',
       },
     },
   },

@@ -16,6 +16,17 @@ export const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // Domino's Brand Button Variants
+        "dominos-primary":
+          "bg-dominos-red text-white shadow-md hover:bg-dominos-red-hover focus-visible:ring-dominos-red/20 font-semibold",
+        "dominos-secondary":
+          "bg-white text-dominos-red border-2 border-dominos-red shadow-sm hover:bg-dominos-red hover:text-white focus-visible:ring-dominos-red/20 font-semibold",
+        "dominos-accent":
+          "bg-dominos-blue text-white shadow-md hover:bg-dominos-blue-hover focus-visible:ring-dominos-blue/20 font-semibold",
+        "dominos-ghost":
+          "text-dominos-red hover:bg-dominos-red/10 hover:text-dominos-red font-medium",
+        "dominos-blue-ghost":
+          "text-dominos-blue hover:bg-dominos-blue/10 hover:text-dominos-blue font-medium",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
