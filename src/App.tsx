@@ -340,81 +340,103 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-blue-600">
+      <div className="min-h-screen bg-white">
         <EnhancedHeader />
-        <div className="max-w-6xl mx-auto p-4">
+        
+        {/* Main content container with responsive grid */}
+        <div className="dominos-container py-8">
+          
+          {/* Search and Store Info Section - Card-based layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Search takes up 2 columns on large screens */}
+            <div className="lg:col-span-2">
+              <div className="dominos-card">
+                <UnifiedSearch
+                  onStoreSelect={(selectedStoreId) => {
+                    setStoreId(selectedStoreId)
+                    localStorage.setItem('lastStoreId', selectedStoreId)
+                  }}
+                  onRateLimitUpdate={(newRequestCount, newFirstRequestTime) => {
+                    setRequestCount(newRequestCount)
+                    setFirstRequestTime(newFirstRequestTime)
+                    
+                    // Store in localStorage for persistence
+                    localStorage.setItem('rateLimit', JSON.stringify({
+                      requestCount: newRequestCount,
+                      firstRequestTime: newFirstRequestTime
+                    }))
+                  }}
+                  currentLanguage={language}
+                  onLanguageChange={(newLanguage) => {
+                    setLanguage(newLanguage)
+                    localStorage.setItem('selectedLanguage', newLanguage)
+                  }}
+                  requestCount={requestCount}
+                  firstRequestTime={firstRequestTime}
+                  onFetchCoupons={fetchCoupons}
+                  loading={loading}
+                  error={error}
+                />
+              </div>
+            </div>
 
-          <div className="flex flex-col lg:flex-row gap-6 mb-8">
-            <UnifiedSearch
-              onStoreSelect={(selectedStoreId) => {
-                setStoreId(selectedStoreId)
-                localStorage.setItem('lastStoreId', selectedStoreId)
-              }}
-              onRateLimitUpdate={(newRequestCount, newFirstRequestTime) => {
-                setRequestCount(newRequestCount)
-                setFirstRequestTime(newFirstRequestTime)
-                
-                // Store in localStorage for persistence
-                localStorage.setItem('rateLimit', JSON.stringify({
-                  requestCount: newRequestCount,
-                  firstRequestTime: newFirstRequestTime
-                }))
-              }}
-              currentLanguage={language}
-              onLanguageChange={(newLanguage) => {
-                setLanguage(newLanguage)
-                localStorage.setItem('selectedLanguage', newLanguage)
-              }}
-              requestCount={requestCount}
-              firstRequestTime={firstRequestTime}
-              onFetchCoupons={fetchCoupons}
-              loading={loading}
-              error={error}
-            />
-
-            {storeInfo && <StoreInfoCard storeInfo={storeInfo} />}
+            {/* Store info takes up 1 column on large screens */}
+            {storeInfo && (
+              <div className="lg:col-span-1">
+                <div className="dominos-card h-fit">
+                  <StoreInfoCard storeInfo={storeInfo} />
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* Coupons Display Section */}
           {processedCoupons.length > 0 && (
-            <CouponDisplay
-              coupons={processedCoupons}
-              onCardToggle={toggleCardExpansion}
-              expandedCards={expandedCards}
-            />
+            <div className="dominos-card mb-8">
+              <CouponDisplay
+                coupons={processedCoupons}
+                onCardToggle={toggleCardExpansion}
+                expandedCards={expandedCards}
+              />
+            </div>
           )}
 
+          {/* Email Button - Sticky positioning with card styling */}
           {processedCoupons.length > 0 && (
-            <div className="sticky bottom-4 mt-8 z-40">
+            <div className="sticky bottom-4 z-40">
               <div className="flex justify-center px-4">
                 <div className="max-w-sm w-full">
-                  <EmailErrorBoundary>
-                    <EmailCouponsButton
-                      coupons={processedCoupons}
-                      onClick={handleEmailButtonClick}
-                    />
-                  </EmailErrorBoundary>
+                  <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+                    <EmailErrorBoundary>
+                      <EmailCouponsButton
+                        coupons={processedCoupons}
+                        onClick={handleEmailButtonClick}
+                      />
+                    </EmailErrorBoundary>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Empty State - Updated for white background */}
           {processedCoupons.length === 0 && !loading && !error && (
-            <div className="text-center py-16">
+            <div className="dominos-card text-center py-16">
               <div className="mb-8">
                 <div className="text-8xl mb-4">🍕</div>
-                <h2 className="text-2xl font-bold text-blue-100 mb-2">
+                <h2 className="dominos-heading-lg text-gray-900 mb-2">
                   Ready to Find Great Deals?
                 </h2>
-                <p className="text-blue-200 text-lg">
+                <p className="dominos-subheading text-lg">
                   Enter a store number or search by address to discover amazing Domino's coupons!
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-blue-200">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-gray-600">
                 <div className="flex items-center gap-2">
                   <div className="text-2xl">🏪</div>
                   <span className="text-sm">Enter store number directly</span>
                 </div>
-                <div className="text-blue-300">or</div>
+                <div className="text-gray-400">or</div>
                 <div className="flex items-center gap-2">
                   <div className="text-2xl">📍</div>
                   <span className="text-sm">Search by your address</span>

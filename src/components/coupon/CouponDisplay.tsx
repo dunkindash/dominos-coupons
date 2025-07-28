@@ -259,10 +259,10 @@ export const CouponDisplay = memo(function CouponDisplay({ coupons, onCardToggle
             {lateNightCoupons.length > 0 && (
                 <div className="mb-8">
                     <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-purple-200 mb-2 flex items-center justify-center gap-2">
+                        <h2 className="dominos-heading-lg text-purple-800 mb-2 flex items-center justify-center gap-2">
                             🌙 Late Night Deals 🌙
                         </h2>
-                        <p className="text-purple-100 text-sm">
+                        <p className="dominos-subheading text-sm">
                             🦉 Perfect for night owls - special late night offers!
                         </p>
                     </div>
@@ -289,10 +289,10 @@ export const CouponDisplay = memo(function CouponDisplay({ coupons, onCardToggle
             {regularCoupons.length > 0 && (
                 <div className="mb-8">
                     <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-blue-200 mb-2">
+                        <h2 className="dominos-heading-lg text-dominos-red mb-2">
                             🎟️ All Available Coupons ({regularCoupons.length})
                         </h2>
-                        <p className="text-blue-100 text-sm">
+                        <p className="dominos-subheading text-sm">
                             Save money on your favorite Domino's items
                         </p>
                     </div>
