@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 
 /**
  * Custom hook for debouncing values
@@ -26,34 +26,38 @@ export function useDebounce<T>(value: T, delay: number): T {
  * Custom hook for debounced callbacks
  * @param callback - Function to debounce
  * @param delay - Delay in milliseconds
- * @param deps - Dependencies array
  * @returns Debounced callback
  */
 export function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
   callback: T,
-  delay: number,
-  deps: React.DependencyList = []
+  delay: number
 ): T {
-  const [debouncedCallback] = useState(() => {
+  const callbackRef = useRef(callback)
+
+  // Always keep latest callback in ref so debounced function
+  // uses fresh values without needing to recreate on every render
+  useEffect(() => {
+    callbackRef.current = callback
+  }, [callback])
+
+  const debouncedCallback = useMemo(() => {
     let timeoutId: NodeJS.Timeout
 
     const debounced = (...args: Parameters<T>) => {
       clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => callback(...args), delay)
+      timeoutId = setTimeout(() => callbackRef.current(...args), delay)
     }
 
-    // Add cleanup method
     ;(debounced as T & { cancel: () => void }).cancel = () => clearTimeout(timeoutId)
 
     return debounced as T
-  })
+    }, [delay])
 
   useEffect(() => {
     return () => {
       ;(debouncedCallback as T & { cancel?: () => void }).cancel?.()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedCallback, ...deps])
+  }, [debouncedCallback])
 
   return debouncedCallback
 }
