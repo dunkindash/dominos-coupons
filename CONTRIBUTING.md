@@ -60,7 +60,7 @@ npm install
 # Run development server
 npm run dev
 
-# Run tests
+# Run tests (currently none defined)
 npm test
 
 # Run linting
