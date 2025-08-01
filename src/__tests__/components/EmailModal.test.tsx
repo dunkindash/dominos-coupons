@@ -59,10 +59,10 @@ describe('EmailModal', () => {
 
   it('renders when open', () => {
     render(<EmailModal {...defaultProps} />)
-    
+
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('Email Coupons')).toBeInTheDocument()
-    expect(screen.getByText('Store #7046 • 2 coupons available')).toBeInTheDocument()
+    expect(screen.getByText('Email Coupons - Store #7046')).toBeInTheDocument()
+    expect(screen.getByText('2 coupons available')).toBeInTheDocument()
   })
 
   it('does not render when closed', () => {
