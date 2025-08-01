@@ -1,17 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { StoreInfo, Coupon } from "@/types/dominos"
 
-interface AppState {
-  storeId: string
-  language: string
-  coupons: Coupon[]
-  loading: boolean
-  error: string
-  storeInfo: StoreInfo | null
-  expandedCards: Set<string>
-  couponViewMode: 'grid' | 'list'
-}
-
 export function useAppState() {
   const [storeId, setStoreId] = useState(() => 
     localStorage.getItem('lastStoreId') || ''

@@ -1,10 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 
-interface RateLimitState {
-  requestCount: number
-  firstRequestTime: number | null
-}
-
 export function useRateLimit() {
   const [requestCount, setRequestCount] = useState(() => {
     try {
