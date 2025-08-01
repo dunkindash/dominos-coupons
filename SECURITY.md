@@ -37,4 +37,4 @@ This project implements the following security measures:
 - Always use environment variables for configuration
 - Validate and sanitize all user inputs
 - Keep dependencies up to date
-- Follow the principle of least privilege
+- Follow the principle of least privilege.
