@@ -75,17 +75,32 @@ export function processCoupons(coupons: Coupon[]): Coupon[] {
 /**
  * Parse coupon data from API response
  */
-export function parseCouponData(data: any): Coupon[] {
-  const couponsData = data.Coupons || data.coupons || data.Coupon || { Columns: [], Data: [] }
+export function parseCouponData(data: unknown): Coupon[] {
+  // Type guard to ensure data is an object
+  if (!data || typeof data !== 'object') {
+    return []
+  }
   
-  if (!couponsData.Columns || !couponsData.Data) {
+  const dataObj = data as Record<string, unknown>
+  const couponsData = dataObj.Coupons || dataObj.coupons || dataObj.Coupon || { Columns: [], Data: [] }
+  
+  // Type guard for coupons data structure
+  if (!couponsData || typeof couponsData !== 'object') {
+    return []
+  }
+  
+  const couponsObj = couponsData as { Columns?: unknown[]; Data?: unknown[][] }
+  
+  if (!couponsObj.Columns || !couponsObj.Data || !Array.isArray(couponsObj.Columns) || !Array.isArray(couponsObj.Data)) {
     return []
   }
 
-  return couponsData.Data.map((row: unknown[]) => {
+  return couponsObj.Data.map((row: unknown[]) => {
     const coupon: Record<string, unknown> = {}
-    couponsData.Columns.forEach((column: string, index: number) => {
-      coupon[column] = row[index]
+    couponsObj.Columns!.forEach((column: unknown, index: number) => {
+      if (typeof column === 'string') {
+        coupon[column] = row[index]
+      }
     })
     
     // Parse expiration date, virtual code, and eligible items from Tags field
