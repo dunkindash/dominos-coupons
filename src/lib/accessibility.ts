@@ -92,7 +92,7 @@ export function useKeyboardNavigation(onActivate?: () => void, onEscape?: () => 
  * Generate accessible IDs for form elements and their labels
  */
 export function useAccessibleIds(prefix: string = 'element') {
-  const baseId = useRef(`${prefix}-${Math.random().toString(36).substr(2, 9)}`)
+  const baseId = useRef(`${prefix}-${Math.random().toString(36).substring(2, 11)}`)
   
   return {
     id: baseId.current,

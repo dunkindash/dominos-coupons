@@ -78,7 +78,7 @@ export const ViewSelector = memo(function ViewSelector({
       {/* View toggle buttons */}
       <div 
         className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg transition-all duration-200"
-        role="group"
+        role="radiogroup"
         aria-labelledby="coupon-count-heading"
         aria-label="Choose coupon display view"
       >

@@ -1,19 +1,24 @@
 import { useState, useCallback } from 'react'
+import { apiService, ApiError } from '@/services/api'
 import type { Coupon, StoreInfo } from '@/types/dominos'
+import { processCoupons } from '@/lib/coupon-processor'
 
 interface UseCouponsReturn {
   coupons: Coupon[]
+  storeInfo: StoreInfo | null
   loading: boolean
   error: string
-  storeInfo: StoreInfo | null
   fetchCoupons: (storeId: string, language: string) => Promise<void>
+  clearError: () => void
 }
 
-export function useCoupons(): UseCouponsReturn {
+export function useCoupons(
+  onRateLimitUpdate?: (count: number, resetTime: number | null) => void
+): UseCouponsReturn {
   const [coupons, setCoupons] = useState<Coupon[]>([])
+  const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
 
   const fetchCoupons = useCallback(async (storeId: string, language: string) => {
     if (!storeId) return
@@ -22,71 +27,49 @@ export function useCoupons(): UseCouponsReturn {
     setError('')
     
     try {
-      const apiUrl = import.meta.env.PROD 
-        ? `/api/store/${storeId}/menu?lang=${language}`
-        : `/api/power/store/${storeId}/menu?lang=${language}`
-        
-      const authToken = sessionStorage.getItem('authToken')
-      const response = await fetch(apiUrl, {
-        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
-      })
+      const response = await apiService.fetchCoupons(storeId, language)
       
-      if (response.status === 429) {
-        const errorData = await response.json()
-        setError(errorData.message || 'Rate limit exceeded')
-        return
-      }
+      // Update rate limit info
+      const newRequestCount = response.rateLimit.limit - response.rateLimit.remaining
+      const newFirstRequestTime = response.rateLimit.resetTime && response.rateLimit.remaining < response.rateLimit.limit ? 
+        new Date(response.rateLimit.resetTime).getTime() - (10 * 60 * 1000) : null
       
-      if (response.status === 401) {
-        setError('Session expired. Please refresh the page.')
-        return
-      }
+      onRateLimitUpdate?.(newRequestCount, newFirstRequestTime)
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch menu data')
-      }
+      // Set store info
+      setStoreInfo(response.storeInfo)
       
-      const data = await response.json()
+      // Process and set coupons
+      const processedCoupons = processCoupons(response.coupons)
+      setCoupons(processedCoupons)
       
-      // Extract store information
-      setStoreInfo({
-        StoreID: data.StoreID,
-        BusinessDate: data.BusinessDate,
-        MarketName: data.Market,
-        AddressDescription: data.AddressDescription,
-        Phone: data.Phone,
-        IsOpen: data.IsOpen,
-        IsOnlineCapable: data.IsOnlineCapable,
-        IsDeliveryStore: data.IsDeliveryStore
-      })
-      
-      // Process coupons data
-      const couponsData = data.Coupons || data.coupons || data.Coupon || { Columns: [], Data: [] }
-      
-      if (couponsData.Columns && couponsData.Data) {
-        const processedCoupons = couponsData.Data.map((row: unknown[]) => {
-          const coupon: Record<string, unknown> = {}
-          couponsData.Columns.forEach((column: string, index: number) => {
-            coupon[column] = row[index]
-          })
-          return coupon
-        })
-        setCoupons(processedCoupons)
-      } else {
-        setCoupons([])
-      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      if (err instanceof ApiError) {
+        setError(err.message)
+        
+        // Handle authentication errors
+        if (err.status === 401) {
+          sessionStorage.removeItem('authToken')
+          // Could trigger a re-authentication flow here
+        }
+      } else {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      }
     } finally {
       setLoading(false)
     }
+  }, [onRateLimitUpdate])
+
+  const clearError = useCallback(() => {
+    setError('')
   }, [])
 
   return {
     coupons,
+    storeInfo,
     loading,
     error,
-    storeInfo,
-    fetchCoupons
+    fetchCoupons,
+    clearError
   }
 }
