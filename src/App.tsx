@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react'
+import { useState, useEffect, lazy, Suspense, useCallback } from 'react'
 import type { StoreInfo } from "@/types/dominos"
 
 import type { Coupon } from "@/types/dominos"
@@ -11,63 +11,11 @@ import StoreInfoCard from './components/store/StoreInfoCard'
 import CouponDisplay from './components/coupon/CouponDisplay'
 import ErrorBoundary from './components/common/ErrorBoundary'
 import EmailErrorBoundary from './components/email/EmailErrorBoundary'
+import { parseCouponData, processCoupons } from '@/lib/coupon-processor'
 
 // Lazy load the email modal for better performance
 const EmailModal = lazy(() => import('./components/EmailModal'))
 
-// Helper function to extract menu item hints from coupon descriptions
-const extractMenuItemHints = (description: string): string[] => {
-  const hints: string[] = []
-  const lowerDesc = description.toLowerCase()
-  
-  // Common menu item keywords (order matters - more specific first)
-  const menuItems = [
-    'large pizza', 'medium pizza', 'small pizza',
-    'specialty pizza', 'cheese pizza', 'pepperoni pizza',
-    'hand tossed', 'thin crust', 'pan pizza',
-    'boneless wings', 'traditional wings',
-    'cheesy bread', 'bread',
-    'pizza', 'wings', 'pasta', 'sandwich', 'sandwiches',
-    'breadsticks', 'soda', 'drink', 'beverages',
-    'dessert', 'cookie', 'brownies', 'salad', 'sides',
-    'supreme', 'pepperoni', 'chicken', 'beef', 'italian sausage',
-    'delivery', 'carryout', 'pickup', 'topping', 'toppings'
-  ]
-  
-  menuItems.forEach(item => {
-    if (lowerDesc.includes(item)) {
-      hints.push(item)
-    }
-  })
-  
-  // Extract specific pricing mentions
-  const priceMatches = description.match(/\$\d+\.?\d*/g)
-  if (priceMatches) {
-    hints.push(...priceMatches.map(price => `Price: ${price}`))
-  }
-  
-  // Extract quantity mentions
-  const quantityMatches = description.match(/\b(\d+)\s*(piece|pc|order|item)/gi)
-  if (quantityMatches) {
-    hints.push(...quantityMatches.map(qty => `Quantity: ${qty}`))
-  }
-  
-  // Detect time-sensitive language
-  const timeSensitiveTerms = [
-    'today only', 'limited time', 'ends tonight', 'ends at midnight',
-    'ends today', 'while supplies last', 'limited offer',
-    'ends soon', 'expires today', 'flash sale', 'hourly special',
-    'lunch special', 'dinner special', 'happy hour'
-  ]
-  
-  timeSensitiveTerms.forEach(term => {
-    if (lowerDesc.includes(term)) {
-      hints.push(`⏰ ${term}`)
-    }
-  })
-  
-  return [...new Set(hints)] // Remove duplicates
-}
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -102,18 +50,6 @@ function App() {
       return 'grid'
     }
   })
-
-  // Memoize processed coupons to avoid recalculation
-  const processedCoupons = useMemo(() => {
-    return coupons.map(coupon => {
-      // Analyze coupon name and description for menu item hints
-      const textToAnalyze = [coupon.Name, coupon.Description].filter(Boolean).join(' ')
-      if (textToAnalyze) {
-        coupon.MenuItemHints = extractMenuItemHints(textToAnalyze)
-      }
-      return coupon
-    })
-  }, [coupons])
 
   const fetchCoupons = useCallback(async () => {
     if (!storeId) return
@@ -180,119 +116,10 @@ function App() {
         languageCode: data.LanguageCode
       })
       
-      // Extract coupons from the structured response
-      const couponsData = data.Coupons || data.coupons || data.Coupon || { Columns: [], Data: [] }
-      
-      if (couponsData.Columns && couponsData.Data) {
-        // Convert the columnar data to coupon objects
-        const coupons = couponsData.Data.map((row: unknown[]) => {
-          const coupon: Record<string, unknown> = {}
-          couponsData.Columns.forEach((column: string, index: number) => {
-            coupon[column] = row[index]
-          })
-          
-          // Parse expiration date, virtual code, and eligible items from Tags field and direct fields
-          
-          // Extract expiration date - check Tags first, then direct fields
-          if (coupon.Tags && typeof coupon.Tags === 'string') {
-            // Check for various date formats in Tags
-            const expiresOnMatch = coupon.Tags.match(/ExpiresOn=(\d{4}-\d{2}-\d{2})/)
-            const expiresAtMatch = coupon.Tags.match(/ExpiresAt=(\d{2}:\d{2}:\d{2})/)
-            const expireDateMatch = coupon.Tags.match(/ExpireDate=([^,]+)/)
-            const expirationMatch = coupon.Tags.match(/Expiration=([^,]+)/)
-            
-            if (expiresOnMatch) {
-              coupon.ExpirationDate = expiresOnMatch[1]
-              // If we also have ExpiresAt, append the time
-              if (expiresAtMatch) {
-                coupon.ExpirationTime = expiresAtMatch[1]
-              }
-            } else if (expireDateMatch) {
-              coupon.ExpirationDate = expireDateMatch[1]
-            } else if (expirationMatch) {
-              coupon.ExpirationDate = expirationMatch[1]
-            }
-          }
-          // Fallback to direct fields if not found in Tags
-          if (!coupon.ExpirationDate && coupon.ExpiresOn) {
-            coupon.ExpirationDate = coupon.ExpiresOn
-          }
-          if (!coupon.ExpirationDate && coupon.ExpireDate) {
-            coupon.ExpirationDate = coupon.ExpireDate
-          }
-          
-          // Extract virtual code - check Tags first, then direct fields
-          if (coupon.Tags && typeof coupon.Tags === 'string') {
-            // Check for various virtual code patterns in Tags
-            const virtualCodeMatch = coupon.Tags.match(/VirtualCode=([^,]+)/)
-            const onlineCodeMatch = coupon.Tags.match(/OnlineCode=([^,]+)/)
-            const webCodeMatch = coupon.Tags.match(/WebCode=([^,]+)/)
-            const codeMatch = coupon.Tags.match(/Code=([^,]+)/)
-            
-            if (virtualCodeMatch) {
-              coupon.VirtualCode = virtualCodeMatch[1]
-            } else if (onlineCodeMatch) {
-              coupon.VirtualCode = onlineCodeMatch[1]
-            } else if (webCodeMatch) {
-              coupon.VirtualCode = webCodeMatch[1]
-            } else if (codeMatch && !coupon.Code) {
-              // Only use generic Code if we don't already have a main Code
-              coupon.VirtualCode = codeMatch[1]
-            }
-          }
-          
-          // Continue with other Tags processing
-          if (coupon.Tags && typeof coupon.Tags === 'string') {
-            
-            // Extract eligible product codes and categories
-            const productCodesMatch = coupon.Tags.match(/ProductCodes=([^,]+)/)
-            if (productCodesMatch) {
-              coupon.EligibleProducts = productCodesMatch[1].split(':')
-            }
-            
-            const categoryCodesMatch = coupon.Tags.match(/CategoryCodes=([^,]+)/)
-            if (categoryCodesMatch) {
-              coupon.EligibleCategories = categoryCodesMatch[1].split(':')
-            }
-            
-            // Extract minimum order requirements
-            const minOrderMatch = coupon.Tags.match(/MinOrder=([^,]+)/)
-            if (minOrderMatch) {
-              coupon.MinimumOrder = minOrderMatch[1]
-            }
-            
-            // Extract service method restrictions
-            const serviceMethodMatch = coupon.Tags.match(/ServiceMethod=([^,]+)/)
-            if (serviceMethodMatch) {
-              coupon.ServiceMethod = serviceMethodMatch[1]
-            }
-            
-            // Extract valid service methods
-            const validServiceMethodsMatch = coupon.Tags.match(/ValidServiceMethods=([^,]+)/)
-            if (validServiceMethodsMatch) {
-              coupon.ValidServiceMethods = validServiceMethodsMatch[1].split(':')
-            }
-            
-            // Extract time-based restrictions from Tags
-            const timeRestrictionMatch = coupon.Tags.match(/TimeRestriction=([^,]+)/)
-            if (timeRestrictionMatch) {
-              coupon.TimeRestriction = timeRestrictionMatch[1]
-            }
-            
-            const validHoursMatch = coupon.Tags.match(/ValidHours=([^,]+)/)
-            if (validHoursMatch) {
-              coupon.ValidHours = validHoursMatch[1]
-            }
-          }
-          
-          // Menu item hints will be added in the memoized processedCoupons
-          
-          return coupon
-        })
-        setCoupons(coupons)
-      } else {
-        setCoupons([])
-      }
+      // Parse and process coupons from response
+      const rawCoupons = parseCouponData(data)
+      const processed = processCoupons(rawCoupons)
+      setCoupons(processed)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -431,14 +258,14 @@ function App() {
           </section>
 
           {/* Coupons Display Section */}
-          {processedCoupons.length > 0 && (
-            <section 
+          {coupons.length > 0 && (
+            <section
               id="coupons-section"
               className="dominos-card mb-6 sm:mb-8"
-              aria-label={`${processedCoupons.length} available coupons`}
+              aria-label={`${coupons.length} available coupons`}
             >
               <CouponDisplay
-                coupons={processedCoupons}
+                coupons={coupons}
                 onCardToggle={toggleCardExpansion}
                 expandedCards={expandedCards}
                 viewMode={couponViewMode}
@@ -450,15 +277,15 @@ function App() {
           {/* Action Bar - Contextual actions for coupons */}
           <EmailErrorBoundary>
             <ActionBar
-              visible={processedCoupons.length > 0}
-              coupons={processedCoupons}
+              visible={coupons.length > 0}
+              coupons={coupons}
               onEmailCoupons={handleEmailButtonClick}
             />
           </EmailErrorBoundary>
 
           {/* Empty State - Updated for white background */}
-          {processedCoupons.length === 0 && !loading && !error && (
-            <section 
+          {coupons.length === 0 && !loading && !error && (
+            <section
               className="dominos-card text-center py-12 sm:py-16"
               aria-label="Getting started instructions"
             >
@@ -489,18 +316,20 @@ function App() {
 
         {/* Email Modal */}
         <EmailErrorBoundary>
-          <Suspense fallback={
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div className="bg-white rounded-lg p-6 flex items-center gap-3">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-red-600 border-t-transparent"></div>
-                <span>Loading email modal...</span>
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div className="bg-white rounded-lg p-6 flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-red-600 border-t-transparent"></div>
+                  <span>Loading email modal...</span>
+                </div>
               </div>
-            </div>
-          }>
+            }
+          >
             <EmailModal
               isOpen={isEmailModalOpen}
               onClose={handleEmailModalClose}
-              coupons={processedCoupons}
+              coupons={coupons}
               storeInfo={storeInfo}
             />
           </Suspense>
