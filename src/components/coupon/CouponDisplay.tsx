@@ -689,6 +689,27 @@ export const CouponDisplay = memo(function CouponDisplay({
                     Save money on your favorite Domino's items
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
+                    {/* All filter - selected by default */}
+                    {(() => {
+                        const isActive = activeCategoryName === null
+                        return (
+                            <button
+                                type="button"
+                                key="All"
+                                aria-pressed={isActive}
+                                onClick={() => setActiveCategoryName(null)}
+                                className={`
+                                    px-3 py-1 rounded-full text-xs font-medium
+                                    text-gray-700 bg-gray-50 border-gray-200
+                                    border shadow-sm cursor-pointer select-none
+                                    transition outline-none
+                                    ${isActive ? 'ring-2 ring-offset-1 ring-dominos-red' : 'hover:shadow-md'}
+                                `}
+                            >
+                                🎟️ All ({coupons.length})
+                            </button>
+                        )
+                    })()}
                     {categorizedCoupons.map(({ category, coupons }) => {
                         const isActive = activeCategoryName === category.name
                         return (
