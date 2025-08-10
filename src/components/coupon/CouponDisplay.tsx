@@ -1,4 +1,4 @@
-import { useMemo, memo } from 'react'
+import { useMemo, memo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ViewSelector } from "./ViewSelector"
@@ -635,6 +635,8 @@ export const CouponDisplay = memo(function CouponDisplay({
     viewMode = 'grid',
     onViewModeChange 
 }: CouponDisplayProps) {
+    // Track which category chip is selected; null means show all
+    const [activeCategoryName, setActiveCategoryName] = useState<string | null>(null)
     // Enhanced categorization and sorting
     const categorizedCoupons = useMemo(() => {
         const categorized = new Map<string, Coupon[]>()
@@ -670,6 +672,12 @@ export const CouponDisplay = memo(function CouponDisplay({
         return null
     }
 
+    // Apply filter based on active category chip selection
+    const visibleCategories = useMemo(() => {
+        if (!activeCategoryName) return categorizedCoupons
+        return categorizedCoupons.filter(({ category }) => category.name === activeCategoryName)
+    }, [categorizedCoupons, activeCategoryName])
+
     return (
         <div className="space-y-8">
             {/* Summary Stats */}
@@ -681,18 +689,26 @@ export const CouponDisplay = memo(function CouponDisplay({
                     Save money on your favorite Domino's items
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
-                    {categorizedCoupons.map(({ category, coupons }) => (
-                        <span 
-                            key={category.name}
-                            className={`
-                                px-3 py-1 rounded-full text-xs font-medium
-                                ${category.color} ${category.bgColor} ${category.borderColor}
-                                border shadow-sm
-                            `}
-                        >
-                            {category.icon} {category.name} ({coupons.length})
-                        </span>
-                    ))}
+                    {categorizedCoupons.map(({ category, coupons }) => {
+                        const isActive = activeCategoryName === category.name
+                        return (
+                            <button
+                                type="button"
+                                key={category.name}
+                                aria-pressed={isActive}
+                                onClick={() => setActiveCategoryName(prev => prev === category.name ? null : category.name)}
+                                className={`
+                                    px-3 py-1 rounded-full text-xs font-medium
+                                    ${category.color} ${category.bgColor} ${category.borderColor}
+                                    border shadow-sm cursor-pointer select-none
+                                    transition outline-none
+                                    ${isActive ? 'ring-2 ring-offset-1 ring-dominos-red' : 'hover:shadow-md'}
+                                `}
+                            >
+                                {category.icon} {category.name} ({coupons.length})
+                            </button>
+                        )
+                    })}
                 </div>
             </div>
 
@@ -705,11 +721,11 @@ export const CouponDisplay = memo(function CouponDisplay({
                 />
             )}
 
-            {/* Categorized Coupons */}
-            {categorizedCoupons.map(({ category, coupons: categoryCoupons }) => (
+            {/* Categorized Coupons (filtered) */}
+            {visibleCategories.map(({ category, coupons: categoryCoupons }) => (
                 <div key={category.name} className="mb-8">
                     {/* Category Header - Only show if more than one category */}
-                    {categorizedCoupons.length > 1 && (
+                    {visibleCategories.length > 1 && (
                         <div className="text-center mb-6">
                             <h3 className={`
                                 dominos-heading-md mb-2 flex items-center justify-center gap-2
