@@ -123,6 +123,12 @@ function App() {
       // Extract store information
       setStoreInfo({
         StoreID: data.StoreID,
+        BusinessDate: data.BusinessDate,
+        MarketName: data.Market,
+        StoreAsOfTime: data.StoreAsOfTime,
+        Status: data.Status,
+        LanguageCode: data.LanguageCode,
+        // Backward compatibility aliases
         businessDate: data.BusinessDate,
         market: data.Market,
         storeAsOfTime: data.StoreAsOfTime,

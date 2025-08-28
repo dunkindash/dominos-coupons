@@ -1,5 +1,10 @@
 // Define specific types for coupon properties
-export type CouponPropertyValue = string | number | boolean | string[] | undefined;
+export type CouponPropertyValue =
+  | string
+  | number
+  | boolean
+  | string[]
+  | undefined;
 
 export interface Coupon {
   ID?: string;
@@ -34,58 +39,68 @@ export interface DominosMenu {
 }
 
 // Define specific types for store properties
-export type StorePropertyValue = string | number | boolean | Record<string, string> | {
-  Description?: string;
-  Latitude?: number;
-  Longitude?: number;
-  [key: string]: string | number | undefined;
-} | {
-  Delivery?: Record<string, string>
-  Carryout?: Record<string, string>
-  [key: string]: Record<string, string> | undefined;
-} | undefined;
+export type StorePropertyValue =
+  | string
+  | number
+  | boolean
+  | Record<string, string>
+  | {
+      Description?: string;
+      Latitude?: number;
+      Longitude?: number;
+      [key: string]: string | number | undefined;
+    }
+  | {
+      Delivery?: Record<string, string>;
+      Carryout?: Record<string, string>;
+      [key: string]: Record<string, string> | undefined;
+    }
+  | undefined;
 
 export interface StoreInfo {
-  StoreID: string | number
-  AddressDescription?: string
-  BusinessDate?: string
-  Phone?: string
-  MarketName?: string
-  IsOpen?: boolean
-  IsOnlineCapable?: boolean
-  IsDeliveryStore?: boolean
+  StoreID: string | number;
+  AddressDescription?: string;
+  BusinessDate?: string;
+  Phone?: string;
+  MarketName?: string;
+  StoreAsOfTime?: string;
+  Status?: string;
+  LanguageCode?: string;
+  IsOpen?: boolean;
+  IsOnlineCapable?: boolean;
+  IsDeliveryStore?: boolean;
   StoreCoordinates?: {
-    Description?: string
+    Description?: string;
     Latitude?: number;
     Longitude?: number;
     [key: string]: string | number | undefined;
-  }
+  };
   ServiceHours?: {
-    Delivery?: Record<string, string>
-    Carryout?: Record<string, string>
+    Delivery?: Record<string, string>;
+    Carryout?: Record<string, string>;
     [key: string]: Record<string, string> | undefined;
-  }
+  };
   [key: string]: StorePropertyValue;
 }
 
 export interface EmailRequest {
-  email: string
-  coupons: Coupon[]
-  storeInfo: StoreInfo
+  email: string;
+  coupons: Coupon[];
+  storeInfo: StoreInfo;
 }
 
 export interface EmailResponse {
-  success: boolean
-  message: string
-  emailId?: string
-  error?: string
+  success: boolean;
+  message: string;
+  emailId?: string;
+  error?: string;
   _meta?: {
-    requestsRemaining: number
-    resetTime: number
-  }
+    requestsRemaining: number;
+    resetTime: number;
+  };
 }
 
 export interface RateLimitInfo {
-  requestCount: number
-  firstRequestTime: number | null
+  requestCount: number;
+  firstRequestTime: number | null;
 }
