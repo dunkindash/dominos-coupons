@@ -300,7 +300,7 @@ export default function DealDashboard({
                 </label>
                 <select
                   id="sort-by"
-                  value={dealFilters.sortBy || ""}
+                  value={dealFilters.sortBy ?? "date_added"}
                   onChange={(e) =>
                     setDealFilters((prev) => ({
                       ...prev,
@@ -323,7 +323,7 @@ export default function DealDashboard({
                 </label>
                 <select
                   id="sort-order"
-                  value={dealFilters.sortOrder || ""}
+                  value={dealFilters.sortOrder ?? "desc"}
                   onChange={(e) =>
                     setDealFilters((prev) => ({
                       ...prev,
