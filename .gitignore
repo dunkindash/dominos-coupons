@@ -139,3 +139,4 @@ dist
 .kiro/
 .env.example
 GITHUB_SECURITY_SETUP.md
+.DS_Store
