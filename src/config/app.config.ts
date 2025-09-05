@@ -1,5 +1,25 @@
 /**
- * Centralized application configuration
+ * src/config/app.config.ts
+ * 
+ * Centralized Application Configuration Management
+ * 
+ * Requirements:
+ * - TypeScript 5.0+
+ * - Node.js 18+ (for process.env access)
+ * 
+ * Dependencies:
+ * - None (pure TypeScript configuration)
+ * 
+ * Features:
+ * - Environment-specific configuration overrides (development, production, test)
+ * - Type-safe configuration interfaces with validation
+ * - Email, API, UI, and Security configuration sections
+ * - Runtime configuration validation with error reporting
+ * - Convenience exports for specific config sections
+ * - Automatic environment detection and config merging
+ * - Production-ready security defaults with CSRF protection
+ * - Rate limiting configuration for API endpoints
+ * - Vercel deployment support with dynamic origin detection
  */
 
 export interface EmailConfig {
@@ -196,7 +216,17 @@ export function validateConfig(config: AppConfig): { valid: boolean; errors: str
 // Runtime configuration validation
 const configValidation = validateConfig(appConfig)
 if (!configValidation.valid) {
-  console.warn('Configuration validation failed:', configValidation.errors)
+  // Import logger dynamically to avoid circular dependencies
+  import('../lib/logger.js').then(({ logger }) => {
+    logger.warn('Configuration validation failed', {
+      errors: configValidation.errors,
+      environment: process.env.NODE_ENV || 'development',
+      context: 'app-config-validation'
+    })
+  }).catch(() => {
+    // Fallback to console if logger import fails
+    console.warn('Configuration validation failed:', configValidation.errors)
+  })
 }
 
 export default appConfig

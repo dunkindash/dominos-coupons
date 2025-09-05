@@ -1,3 +1,11 @@
+/**
+ * src/App.tsx
+ * 
+ * Main application component for Domino's Coupons Finder
+ * Requirements: React 19+, TypeScript 5.0+
+ * Dependencies: React, various custom components and utilities
+ */
+
 import { useState, useEffect, lazy, Suspense, useCallback } from "react";
 import type { StoreInfo } from "@/types/dominos";
 

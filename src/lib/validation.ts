@@ -1,5 +1,9 @@
 /**
+ * src/lib/validation.ts
+ * 
  * Input validation utilities for security and data integrity
+ * Requirements: TypeScript 5.0+
+ * Dependencies: None (pure TypeScript/JavaScript)
  */
 
 // Email validation regex (RFC 5322 compliant)

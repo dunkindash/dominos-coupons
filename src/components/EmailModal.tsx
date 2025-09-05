@@ -1,3 +1,37 @@
+/**
+ * src/components/EmailModal.tsx
+ * 
+ * Email Coupons Modal Component
+ * 
+ * Requirements:
+ * - React 19+
+ * - TypeScript 5.0+
+ * - Tailwind CSS 3.0+
+ * 
+ * Dependencies:
+ * - react: useEffect, useCallback, useMemo for performance optimization
+ * - @/components/ui/button: Reusable button component
+ * - @/components/ui/input: Form input component
+ * - @/components/ui/card: Card layout components (Card, CardHeader, CardTitle, CardContent, CardFooter)
+ * - @/components/CouponSelector: Coupon selection interface
+ * - @/lib/utils: Utility functions (cn for className merging)
+ * - @/hooks/useEmailModal: Custom hook for email modal state management
+ * - @/types/dominos: TypeScript type definitions (Coupon, StoreInfo)
+ * 
+ * Features:
+ * - Full-screen responsive modal with backdrop blur
+ * - Email validation with real-time feedback
+ * - Multi-coupon selection with CouponSelector integration
+ * - Form state management with loading and error states
+ * - Success/error messaging with retry functionality
+ * - Accessibility support with ARIA labels and keyboard navigation
+ * - Mobile-optimized slide-in animations
+ * - Store information display with coupon count
+ * - Rate limiting error handling with user guidance
+ * - Performance optimized with memoized values and callbacks
+ * - Touch-friendly interface with proper button sizing
+ */
+
 import { useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

@@ -1,3 +1,28 @@
+/**
+ * src/components/ActionBar.tsx
+ * 
+ * Sticky Action Bar Component for Coupon Management
+ * 
+ * Requirements:
+ * - React 19+
+ * - TypeScript 5.0+
+ * - Tailwind CSS 3.0+
+ * 
+ * Dependencies:
+ * - react: memo for performance optimization
+ * - @/components/ui/button: Reusable button component
+ * - @/lib/utils: Utility functions (cn for className merging)
+ * - @/types/dominos: TypeScript type definitions for Coupon
+ * 
+ * Features:
+ * - Responsive sticky positioning at bottom of viewport
+ * - Smooth slide-in animations with transform transitions
+ * - Touch-friendly mobile interface with proper sizing
+ * - Accessibility support with ARIA labels and descriptions
+ * - Email coupons functionality with visual feedback
+ * - Future-ready share functionality (currently disabled)
+ */
+
 import { memo } from 'react'
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"

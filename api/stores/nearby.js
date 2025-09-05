@@ -1,3 +1,11 @@
+/**
+ * api/stores/nearby.js
+ * 
+ * Domino's nearby stores API endpoint with rate limiting and validation
+ * Requirements: Node.js 18+, dominos package 3.3.1+
+ * Dependencies: dominos, ../auth.js
+ */
+
 import { NearbyStores } from 'dominos'
 import { verifyToken } from '../auth.js'
 
@@ -7,6 +15,9 @@ const rateLimit = new Map()
 const RATE_LIMIT = 5
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000 // 10 minutes in milliseconds
 
+/**
+ * Clean up expired rate limit entries to prevent memory leaks
+ */
 function cleanupOldEntries() {
   const now = Date.now()
   for (const [key, value] of rateLimit.entries()) {
@@ -16,7 +27,65 @@ function cleanupOldEntries() {
   }
 }
 
+/**
+ * Validate address input for security and format requirements
+ * @param {string} address - The address to validate
+ * @returns {Object} Validation result with isValid flag and sanitized address
+ */
+function validateAddress(address) {
+  if (!address || typeof address !== 'string') {
+    return { isValid: false, error: 'Address is required and must be a string', sanitized: '' }
+  }
+
+  // Sanitize input to prevent injection attacks
+  const sanitized = address
+    .replace(/[<>]/g, '') // Remove potential HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+=/gi, '') // Remove event handlers
+    .trim()
+    .slice(0, 200) // Limit length to reasonable address size
+
+  if (sanitized.length < 3) {
+    return { isValid: false, error: 'Address must be at least 3 characters', sanitized }
+  }
+
+  if (sanitized.length > 200) {
+    return { isValid: false, error: 'Address is too long', sanitized }
+  }
+
+  return { isValid: true, sanitized }
+}
+
+/**
+ * Log structured messages for production monitoring
+ * @param {string} level - Log level (info, warn, error)
+ * @param {string} message - Log message
+ * @param {Object} context - Additional context data
+ */
+function log(level, message, context = {}) {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    level: level.toUpperCase(),
+    message,
+    service: 'nearby-stores-api',
+    ...context
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console[level](`[${logEntry.timestamp}] ${logEntry.level}: ${message}`, context)
+  } else {
+    console[level](JSON.stringify(logEntry))
+  }
+}
+
+/**
+ * Main API handler for nearby stores endpoint
+ * @param {Object} req - HTTP request object
+ * @param {Object} res - HTTP response object
+ */
 export default async function handler(req, res) {
+  const startTime = Date.now()
+  
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -27,20 +96,33 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== 'POST') {
+    log('warn', 'Invalid HTTP method attempted', { method: req.method })
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   // Check authentication
   const authToken = req.headers.authorization?.replace('Bearer ', '')
   if (!verifyToken(authToken)) {
+    log('warn', 'Unauthorized access attempt', { 
+      ip: req.headers['x-forwarded-for'] || 'unknown',
+      userAgent: req.headers['user-agent'] || 'unknown'
+    })
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
   const { address } = req.body
 
-  if (!address) {
-    return res.status(400).json({ error: 'Address is required' })
+  // Validate and sanitize address input
+  const validation = validateAddress(address)
+  if (!validation.isValid) {
+    log('warn', 'Address validation failed', { 
+      error: validation.error, 
+      originalAddress: address?.substring(0, 50) // Log partial for debugging
+    })
+    return res.status(400).json({ error: validation.error })
   }
+
+  const sanitizedAddress = validation.sanitized
 
   // Get client identifier (IP + User Agent for better identification)
   const forwarded = req.headers['x-forwarded-for']
@@ -79,23 +161,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('Finding nearby stores for address:', address)
+    log('info', 'Finding nearby stores for address', { address: sanitizedAddress })
     
-    // Use the address string directly as the dominos API expects
-    const searchLocation = address.trim()
+    // Use the sanitized address for the API call
+    const nearbyStores = await new NearbyStores(sanitizedAddress)
     
-    console.log('Search location:', searchLocation)
-    
-    const nearbyStores = await new NearbyStores(searchLocation)
-    
-    console.log('Raw stores found:', nearbyStores.stores?.length || 0)
-    console.log('First store example:', nearbyStores.stores?.[0])
+    log('info', 'Dominos API response received', { 
+      storesFound: nearbyStores.stores?.length || 0,
+      hasStores: !!nearbyStores.stores
+    })
     
     if (!nearbyStores.stores || nearbyStores.stores.length === 0) {
-      console.log('No stores found in API response')
+      log('info', 'No stores found in API response', { searchLocation: sanitizedAddress })
       return res.status(200).json({
         stores: [],
-        searchLocation: searchLocation,
+        searchLocation: sanitizedAddress,
         message: 'No stores found for this location'
       })
     }
@@ -103,11 +183,21 @@ export default async function handler(req, res) {
     // Filter and sort stores by distance
     const availableStores = nearbyStores.stores
       .filter(store => {
-        console.log(`Store ${store.StoreID}: OnlineCapable=${store.IsOnlineCapable}, DeliveryStore=${store.IsDeliveryStore}, Open=${store.IsOpen}, ServiceOpen=${store.ServiceIsOpen?.Delivery}`)
-        return store.IsOnlineCapable && 
-               store.IsDeliveryStore && 
-               store.IsOpen &&
-               store.ServiceIsOpen?.Delivery
+        const isAvailable = store.IsOnlineCapable && 
+                           store.IsDeliveryStore && 
+                           store.IsOpen &&
+                           store.ServiceIsOpen?.Delivery
+        
+        log('debug', 'Store availability check', {
+          storeId: store.StoreID,
+          onlineCapable: store.IsOnlineCapable,
+          deliveryStore: store.IsDeliveryStore,
+          isOpen: store.IsOpen,
+          serviceOpen: store.ServiceIsOpen?.Delivery,
+          available: isAvailable
+        })
+        
+        return isAvailable
       })
       .sort((a, b) => a.MinDistance - b.MinDistance)
       .slice(0, 10) // Limit to 10 closest stores
@@ -120,7 +210,10 @@ export default async function handler(req, res) {
         deliveryMinutes: store.ServiceEstimatedWaitMinutes?.Delivery
       }))
 
-    console.log(`Found ${availableStores.length} available stores after filtering`)
+    log('info', 'Store filtering completed', { 
+      totalStores: nearbyStores.stores.length,
+      availableStores: availableStores.length 
+    })
 
     // Update rate limit
     if (clientData) {
@@ -142,9 +235,16 @@ export default async function handler(req, res) {
     // Cache for 5 minutes to reduce API calls
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate')
 
+    const duration = Date.now() - startTime
+    log('info', 'Request completed successfully', {
+      duration,
+      storesReturned: availableStores.length,
+      requestsRemaining: RATE_LIMIT - updatedData.count
+    })
+
     res.status(200).json({
       stores: availableStores,
-      searchLocation: searchLocation,
+      searchLocation: sanitizedAddress,
       _meta: {
         requestsRemaining: RATE_LIMIT - updatedData.count,
         resetTime: updatedData.resetTime
@@ -152,7 +252,14 @@ export default async function handler(req, res) {
     })
 
   } catch (error) {
-    console.error('Error finding nearby stores:', error)
+    const duration = Date.now() - startTime
+    log('error', 'Error finding nearby stores', { 
+      error: error.message,
+      stack: error.stack,
+      duration,
+      address: sanitizedAddress
+    })
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return res.status(500).json({ 
       error: 'Failed to find nearby stores',

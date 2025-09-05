@@ -1,3 +1,26 @@
+/**
+ * src/types/dominos.ts
+ * 
+ * TypeScript Type Definitions for Domino's API Integration
+ * 
+ * Requirements:
+ * - TypeScript 5.0+
+ * - Pure TypeScript (no external dependencies)
+ * 
+ * Dependencies:
+ * - None (pure type definitions)
+ * 
+ * Features:
+ * - Comprehensive Coupon interface with flexible property types
+ * - Store information types with coordinates and service hours
+ * - API response types for coupons and email functionality
+ * - Rate limiting information types
+ * - Union types for flexible property values
+ * - Index signatures for extensible interfaces
+ * - Nested object types for complex data structures
+ * - Email request/response type definitions
+ */
+
 // Define specific types for coupon properties
 export type CouponPropertyValue =
   | string

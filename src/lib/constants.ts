@@ -1,5 +1,24 @@
 /**
- * Application-wide constants and configuration
+ * src/lib/constants.ts
+ * 
+ * Application-wide Constants and Configuration
+ * 
+ * Requirements:
+ * - TypeScript 5.0+
+ * - Pure TypeScript (no external dependencies)
+ * 
+ * Dependencies:
+ * - None (pure constants file)
+ * 
+ * Features:
+ * - Email validation and configuration constants
+ * - Common email domain typo corrections
+ * - HTTP status code definitions
+ * - UI timing and animation constants
+ * - Validation regex patterns for email and store ID
+ * - Type-safe constant objects with 'as const' assertions
+ * - RFC 5321 compliant email length limits
+ * - Retry configuration for API calls
  */
 
 // Email configuration

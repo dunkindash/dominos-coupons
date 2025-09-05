@@ -1,3 +1,31 @@
+/**
+ * src/components/CouponSelector.tsx
+ * 
+ * Interactive Coupon Selection Component
+ * 
+ * Requirements:
+ * - React 19+
+ * - TypeScript 5.0+
+ * - Tailwind CSS 3.0+
+ * 
+ * Dependencies:
+ * - react: useMemo for performance optimization
+ * - @/components/ui/button: Reusable button component
+ * - @/lib/utils: Utility functions (cn for className merging)
+ * - @/lib/coupon-utils: Coupon processing utilities (getCouponId, formatCouponPrice, getCouponCode)
+ * - @/types/dominos: TypeScript type definitions for Coupon
+ * 
+ * Features:
+ * - Multi-select checkbox interface with select all/deselect all
+ * - Responsive design with touch-friendly mobile interface
+ * - Accessibility support with proper ARIA labels and descriptions
+ * - Visual feedback for selected state with color coding
+ * - Coupon code display with monospace font styling
+ * - Price display with branded styling
+ * - Empty state handling with user guidance
+ * - Performance optimized with memoized calculations
+ */
+
 import { useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"

@@ -1,12 +1,37 @@
 /**
- * @fileoverview Email API endpoint for sending Domino's coupons to users
- * Handles authentication, rate limiting, validation, and email delivery
+ * api/email/send-coupons.js
+ * 
+ * Email API endpoint for sending Domino's coupons to users
+ * Requirements: Node.js 18+, Resend API, crypto module
+ * Dependencies: ../auth.js, resend, ./templates/base-template.js, crypto
  */
 
 import { verifyToken } from '../auth.js'
 import { Resend } from 'resend'
 import { generateBaseTemplate } from './templates/base-template.js'
 import crypto from 'crypto'
+
+/**
+ * Log structured messages for production monitoring
+ * @param {string} level - Log level (info, warn, error)
+ * @param {string} message - Log message
+ * @param {Object} context - Additional context data
+ */
+function log(level, message, context = {}) {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    level: level.toUpperCase(),
+    message,
+    service: 'email-api',
+    ...context
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console[level](`[${logEntry.timestamp}] ${logEntry.level}: ${message}`, context)
+  } else {
+    console[level](JSON.stringify(logEntry))
+  }
+}
 
 // Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -612,7 +637,8 @@ async function processRequest(req, res) {
 
 // Main request handler
 export default async function handler(req, res) {
-    console.log('Email API called with method:', req.method)
+    const startTime = Date.now()
+    log('info', 'Email API request received', { method: req.method })
 
     const requestData = await processRequest(req, res)
     if (!requestData) return
@@ -624,7 +650,7 @@ export default async function handler(req, res) {
     try {
         // Check email service configuration
         if (!process.env.RESEND_API_KEY) {
-            console.error('RESEND_API_KEY not configured')
+            log('error', 'RESEND_API_KEY not configured')
             const response = createErrorResponse(
                 'Email service not configured',
                 'Email service is temporarily unavailable',
@@ -643,7 +669,10 @@ export default async function handler(req, res) {
                 throw new Error('Generated email template is invalid or too short')
             }
         } catch (templateError) {
-            console.error('Template generation error:', templateError)
+            log('error', 'Template generation error', { 
+                error: templateError.message,
+                stack: templateError.stack 
+            })
             const response = createErrorResponse(
                 'Template generation failed',
                 'Failed to generate email content. Please try again.',
@@ -674,12 +703,11 @@ export default async function handler(req, res) {
             }
 
         } catch (emailError) {
-            console.error('Email sending failed:', {
+            log('error', 'Email sending failed', {
                 error: emailError.message,
                 stack: emailError.stack,
                 email: '[REDACTED]',
-                storeId: storeInfo.StoreID,
-                timestamp: new Date().toISOString()
+                storeId: storeInfo.StoreID
             })
             throw emailError // Re-throw to be handled by outer catch block
         }
@@ -688,7 +716,13 @@ export default async function handler(req, res) {
         const updatedData = updateRateLimit(clientId)
         setRateLimitHeaders(res, updatedData)
 
-        console.log('Email sent successfully:', emailResult.data?.id)
+        const duration = Date.now() - startTime
+        log('info', 'Email sent successfully', { 
+            emailId: emailResult.data?.id,
+            duration,
+            storeId: storeInfo.StoreID,
+            couponsCount: coupons.length
+        })
 
         return res.status(200).json({
             success: true,

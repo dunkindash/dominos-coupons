@@ -1,3 +1,11 @@
+/**
+ * src/services/api.ts
+ * 
+ * API service layer for Domino's Coupons application
+ * Requirements: TypeScript 5.0+, Fetch API
+ * Dependencies: @/types/dominos, @/lib/coupon-processor
+ */
+
 import type { StoreInfo, Coupon } from "@/types/dominos"
 import { parseCouponData } from "@/lib/coupon-processor"
 

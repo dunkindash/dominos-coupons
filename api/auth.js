@@ -1,3 +1,11 @@
+/**
+ * api/auth.js
+ * 
+ * Authentication API endpoint for Domino's Coupons application
+ * Requirements: Node.js 18+, crypto module (built-in)
+ * Dependencies: crypto (built-in)
+ */
+
 import crypto from 'crypto'
 
 // Change this to your desired password
@@ -5,6 +13,28 @@ const CORRECT_PASSWORD = 'CodeGasm26@'
 
 // Secret key for JWT-like tokens (in production, use environment variable)
 const JWT_SECRET = 'your-secret-key-change-this-in-production'
+
+/**
+ * Log structured messages for production monitoring
+ * @param {string} level - Log level (info, warn, error)
+ * @param {string} message - Log message
+ * @param {Object} context - Additional context data
+ */
+function log(level, message, context = {}) {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    level: level.toUpperCase(),
+    message,
+    service: 'auth-api',
+    ...context
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console[level](`[${logEntry.timestamp}] ${logEntry.level}: ${message}`, context)
+  } else {
+    console[level](JSON.stringify(logEntry))
+  }
+}
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -48,19 +78,26 @@ export default async function handler(req, res) {
   res.status(200).json({ token, expiresAt })
 }
 
-// Export function to verify tokens (for other API endpoints)
+/**
+ * Verify JWT-like token for API authentication
+ * @param {string} token - The token to verify
+ * @returns {boolean} True if token is valid, false otherwise
+ */
 export function verifyToken(token) {
-  console.log('Verifying token:', token ? 'present' : 'missing')
+  log('debug', 'Token verification requested', { hasToken: !!token })
   
   if (!token) {
-    console.log('No token provided')
+    log('warn', 'Authentication failed: No token provided')
     return false
   }
   
   try {
     const parts = token.split('.')
     if (parts.length !== 2) {
-      console.log('Invalid token format')
+      log('warn', 'Authentication failed: Invalid token format', { 
+        tokenLength: token.length,
+        parts: parts.length 
+      })
       return false
     }
     
@@ -70,20 +107,28 @@ export function verifyToken(token) {
     // Verify signature
     const expectedSignature = crypto.createHmac('sha256', JWT_SECRET).update(JSON.stringify(payload)).digest('hex')
     if (signature !== expectedSignature) {
-      console.log('Invalid token signature')
+      log('warn', 'Authentication failed: Invalid token signature')
       return false
     }
     
     // Check expiration
     if (payload.exp < Date.now()) {
-      console.log('Token expired')
+      log('warn', 'Authentication failed: Token expired', { 
+        expiredAt: new Date(payload.exp).toISOString(),
+        currentTime: new Date().toISOString()
+      })
       return false
     }
     
-    console.log('Token verified successfully')
+    log('info', 'Token verified successfully', { 
+      expiresAt: new Date(payload.exp).toISOString() 
+    })
     return true
   } catch (error) {
-    console.log('Token verification error:', error.message)
+    log('error', 'Token verification error', { 
+      error: error.message,
+      tokenLength: token?.length || 0
+    })
     return false
   }
 }
