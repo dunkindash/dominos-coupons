@@ -21,6 +21,7 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 import EmailErrorBoundary from "./components/email/EmailErrorBoundary";
 import { parseCouponData, processCoupons } from "@/lib/coupon-processor";
 import DealTrackerWrapper from "./components/deal-tracker/DealTrackerWrapper";
+import SettingsPage from "./components/settings/SettingsPage";
 
 // Lazy load the email modal for better performance
 const EmailModal = lazy(() => import("./components/EmailModal"));
@@ -65,6 +66,7 @@ function App() {
       return "grid";
     }
   });
+  const [activePage, setActivePage] = useState<"home" | "settings">("home");
 
   const fetchCoupons = useCallback(async () => {
     if (!storeId) return;
@@ -187,6 +189,45 @@ function App() {
     setIsEmailModalOpen(false);
   }, []);
 
+  const handleNavigate = useCallback(
+    (target: "stores" | "deals" | "help" | "settings") => {
+      if (target === "settings") {
+        setActivePage("settings");
+        return;
+      }
+      // default to home for other targets
+      setActivePage("home");
+
+      // If navigating to deals and we have a store but no coupons yet, fetch them
+      if (target === "deals" && coupons.length === 0 && storeId) {
+        void fetchCoupons();
+      }
+      // Optionally scroll into view for specific sections in the future
+    },
+    [coupons.length, storeId, fetchCoupons],
+  );
+
+  const handleClearCache = useCallback(() => {
+    try {
+      localStorage.removeItem("lastStoreId");
+      localStorage.removeItem("selectedLanguage");
+      localStorage.removeItem("couponViewMode");
+      localStorage.removeItem("rateLimit");
+    } catch (e) {
+      console.warn("Failed to clear local settings", e);
+    }
+    setStoreId("");
+    setLanguage("en");
+    setCouponViewMode("grid");
+    setRequestCount(0);
+    setFirstRequestTime(null);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem("authToken");
+  }, []);
+
   // Update timer every second
   useEffect(() => {
     const interval = setInterval(() => {
@@ -230,7 +271,11 @@ function App() {
           Skip to search
         </a>
 
-        <EnhancedHeader />
+        <EnhancedHeader
+          showNavigation
+          onNavigate={handleNavigate}
+          customTitle={activePage === "settings" ? "Settings" : undefined}
+        />
 
         {/* Main content container with responsive grid */}
         <main
@@ -239,149 +284,172 @@ function App() {
           role="main"
           aria-label="Domino's Coupons Finder"
         >
-          {/* Search and Store Info Section - Card-based layout */}
-          <section
-            id="search-section"
-            className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
-            aria-label="Store search and information"
-          >
-            {/* Search takes up 2 columns on large screens */}
-            <div className="lg:col-span-2">
-              <div className="dominos-card">
-                <UnifiedSearch
-                  onStoreSelect={(selectedStoreId) => {
-                    setStoreId(selectedStoreId);
-                    localStorage.setItem("lastStoreId", selectedStoreId);
-                  }}
-                  onRateLimitUpdate={(newRequestCount, newFirstRequestTime) => {
-                    setRequestCount(newRequestCount);
-                    setFirstRequestTime(newFirstRequestTime);
-
-                    // Store in localStorage for persistence
-                    localStorage.setItem(
-                      "rateLimit",
-                      JSON.stringify({
-                        requestCount: newRequestCount,
-                        firstRequestTime: newFirstRequestTime,
-                      }),
-                    );
-                  }}
-                  currentLanguage={language}
-                  onLanguageChange={(newLanguage) => {
-                    setLanguage(newLanguage);
-                    localStorage.setItem("selectedLanguage", newLanguage);
-                  }}
-                  requestCount={requestCount}
-                  firstRequestTime={firstRequestTime}
-                  onFetchCoupons={fetchCoupons}
-                  loading={loading}
-                  error={error}
-                />
-              </div>
-            </div>
-
-            {/* Store info takes up 1 column on large screens */}
-            {storeInfo && (
-              <div className="lg:col-span-1">
-                <div className="dominos-card h-fit">
-                  <StoreInfoCard storeInfo={storeInfo} />
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* Deal Tracker Section */}
-          <section
-            id="deal-tracker-section"
-            className="mb-6 sm:mb-8"
-            aria-label="Smart Deal Tracker"
-          >
-            <DealTrackerWrapper
-              currentCoupons={coupons}
-              currentStoreInfo={storeInfo}
-            />
-          </section>
-
-          {/* Coupons Display Section */}
-          {coupons.length > 0 && (
+          {activePage === "settings" ? (
             <section
-              id="coupons-section"
               className="dominos-card mb-6 sm:mb-8"
-              aria-label={`${coupons.length} available coupons`}
+              aria-label="Application settings"
             >
-              <CouponDisplay
-                coupons={coupons}
-                onCardToggle={toggleCardExpansion}
-                expandedCards={expandedCards}
-                viewMode={couponViewMode}
+              <SettingsPage
+                currentLanguage={language}
+                onLanguageChange={(newLanguage) => {
+                  setLanguage(newLanguage);
+                  localStorage.setItem("selectedLanguage", newLanguage);
+                }}
+                currentViewMode={couponViewMode}
                 onViewModeChange={handleViewModeChange}
+                requestCount={requestCount}
+                firstRequestTime={firstRequestTime}
+                onClearCache={handleClearCache}
+                onLogout={handleLogout}
               />
             </section>
-          )}
+          ) : (
+            <>
+              {/* Search and Store Info Section - Card-based layout */}
+              <section
+                id="search-section"
+                className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
+                aria-label="Store search and information"
+              >
+                {/* Search takes up 2 columns on large screens */}
+                <div className="lg:col-span-2">
+                  <div className="dominos-card">
+                    <UnifiedSearch
+                      onStoreSelect={(selectedStoreId) => {
+                        setStoreId(selectedStoreId);
+                        localStorage.setItem("lastStoreId", selectedStoreId);
+                      }}
+                      onRateLimitUpdate={(newRequestCount, newFirstRequestTime) => {
+                        setRequestCount(newRequestCount);
+                        setFirstRequestTime(newFirstRequestTime);
 
-          {/* Action Bar - Contextual actions for coupons */}
-          <EmailErrorBoundary>
-            <ActionBar
-              visible={coupons.length > 0}
-              coupons={coupons}
-              onEmailCoupons={handleEmailButtonClick}
-            />
-          </EmailErrorBoundary>
+                        // Store in localStorage for persistence
+                        localStorage.setItem(
+                          "rateLimit",
+                          JSON.stringify({
+                            requestCount: newRequestCount,
+                            firstRequestTime: newFirstRequestTime,
+                          }),
+                        );
+                      }}
+                      currentLanguage={language}
+                      onLanguageChange={(newLanguage) => {
+                        setLanguage(newLanguage);
+                        localStorage.setItem("selectedLanguage", newLanguage);
+                      }}
+                      requestCount={requestCount}
+                      firstRequestTime={firstRequestTime}
+                      onFetchCoupons={fetchCoupons}
+                      loading={loading}
+                      error={error}
+                    />
+                  </div>
+                </div>
 
-          {/* Empty State - Updated for white background */}
-          {coupons.length === 0 && !loading && !error && (
-            <section
-              className="dominos-card text-center py-12 sm:py-16"
-              aria-label="Getting started instructions"
-            >
-              <div className="mb-6 sm:mb-8">
-                <div
-                  className="text-6xl sm:text-8xl mb-4"
-                  role="img"
-                  aria-label="Pizza emoji"
-                >
-                  🍕
-                </div>
-                <h2 className="dominos-heading-lg text-gray-900 mb-2 px-4">
-                  Ready to Find Great Deals?
-                </h2>
-                <p className="dominos-subheading text-base sm:text-lg px-4">
-                  Enter a store number or search by address to discover amazing
-                  Domino's coupons!
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center text-gray-600 px-4">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="text-xl sm:text-2xl"
-                    role="img"
-                    aria-label="Store icon"
-                  >
-                    🏪
+                {/* Store info takes up 1 column on large screens */}
+                {storeInfo && (
+                  <div className="lg:col-span-1">
+                    <div className="dominos-card h-fit">
+                      <StoreInfoCard storeInfo={storeInfo} />
+                    </div>
                   </div>
-                  <span className="text-sm">Enter store number directly</span>
-                </div>
-                <div
-                  className="text-gray-400 hidden sm:block"
-                  aria-hidden="true"
+                )}
+              </section>
+
+              {/* Deal Tracker Section */}
+              <section
+                id="deal-tracker-section"
+                className="mb-6 sm:mb-8"
+                aria-label="Smart Deal Tracker"
+              >
+                <DealTrackerWrapper
+                  currentCoupons={coupons}
+                  currentStoreInfo={storeInfo}
+                />
+              </section>
+
+              {/* Coupons Display Section */}
+              {coupons.length > 0 && (
+                <section
+                  id="coupons-section"
+                  className="dominos-card mb-6 sm:mb-8"
+                  aria-label={`${coupons.length} available coupons`}
                 >
-                  or
-                </div>
-                <div className="text-gray-400 sm:hidden" aria-hidden="true">
-                  or
-                </div>
-                <div className="flex items-center gap-2">
-                  <div
-                    className="text-xl sm:text-2xl"
-                    role="img"
-                    aria-label="Location pin icon"
-                  >
-                    📍
+                  <CouponDisplay
+                    coupons={coupons}
+                    onCardToggle={toggleCardExpansion}
+                    expandedCards={expandedCards}
+                    viewMode={couponViewMode}
+                    onViewModeChange={handleViewModeChange}
+                  />
+                </section>
+              )}
+
+              {/* Action Bar - Contextual actions for coupons */}
+              <EmailErrorBoundary>
+                <ActionBar
+                  visible={coupons.length > 0}
+                  coupons={coupons}
+                  onEmailCoupons={handleEmailButtonClick}
+                />
+              </EmailErrorBoundary>
+
+              {/* Empty State - Updated for white background */}
+              {coupons.length === 0 && !loading && !error && (
+                <section
+                  className="dominos-card text-center py-12 sm:py-16"
+                  aria-label="Getting started instructions"
+                >
+                  <div className="mb-6 sm:mb-8">
+                    <div
+                      className="text-6xl sm:text-8xl mb-4"
+                      role="img"
+                      aria-label="Pizza emoji"
+                    >
+                      🍕
+                    </div>
+                    <h2 className="dominos-heading-lg text-gray-900 mb-2 px-4">
+                      Ready to Find Great Deals?
+                    </h2>
+                    <p className="dominos-subheading text-base sm:text-lg px-4">
+                      Enter a store number or search by address to discover amazing
+                      Domino's coupons!
+                    </p>
                   </div>
-                  <span className="text-sm">Search by your address</span>
-                </div>
-              </div>
-            </section>
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center text-gray-600 px-4">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="text-xl sm:text-2xl"
+                        role="img"
+                        aria-label="Store icon"
+                      >
+                        🏪
+                      </div>
+                      <span className="text-sm">Enter store number directly</span>
+                    </div>
+                    <div
+                      className="text-gray-400 hidden sm:block"
+                      aria-hidden="true"
+                    >
+                      or
+                    </div>
+                    <div className="text-gray-400 sm:hidden" aria-hidden="true">
+                      or
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="text-xl sm:text-2xl"
+                        role="img"
+                        aria-label="Location pin icon"
+                      >
+                        📍
+                      </div>
+                      <span className="text-sm">Search by your address</span>
+                    </div>
+                  </div>
+                </section>
+              )}
+            </>
           )}
         </main>
 

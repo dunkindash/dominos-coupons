@@ -6,14 +6,16 @@ interface EnhancedHeaderProps {
   showLogo?: boolean
   customTitle?: string
   showNavigation?: boolean
+  onNavigate?: (target: 'stores' | 'deals' | 'help' | 'settings') => void
 }
 
-export const EnhancedHeader = memo(function EnhancedHeader({ 
+export const EnhancedHeader = memo(function EnhancedHeader({
   title = "Find Domino's Deals & Coupons",
   subtitle = "Discover the best deals and exclusive offers at your local Domino's store",
   showLogo = false,
   customTitle,
-  showNavigation = false
+  showNavigation = false,
+  onNavigate
 }: EnhancedHeaderProps) {
   const displayTitle = customTitle || title
 
@@ -59,14 +61,29 @@ export const EnhancedHeader = memo(function EnhancedHeader({
           {showNavigation && (
             <nav className="mt-4 sm:mt-6 pt-4 border-t border-gray-100">
               <div className="flex flex-col xs:flex-row justify-center gap-4 xs:gap-6">
-                <button className="text-dominos-blue hover:text-dominos-red active:text-dominos-red transition-colors duration-200 font-medium py-2 px-4 rounded-md hover:bg-gray-50 touch-manipulation">
+                <button
+                  className="text-dominos-blue hover:text-dominos-red active:text-dominos-red transition-colors duration-200 font-medium py-2 px-4 rounded-md hover:bg-gray-50 touch-manipulation"
+                  onClick={() => onNavigate?.('stores')}
+                >
                   Find Stores
                 </button>
-                <button className="text-dominos-blue hover:text-dominos-red active:text-dominos-red transition-colors duration-200 font-medium py-2 px-4 rounded-md hover:bg-gray-50 touch-manipulation">
+                <button
+                  className="text-dominos-blue hover:text-dominos-red active:text-dominos-red transition-colors duration-200 font-medium py-2 px-4 rounded-md hover:bg-gray-50 touch-manipulation"
+                  onClick={() => onNavigate?.('deals')}
+                >
                   View Deals
                 </button>
-                <button className="text-dominos-blue hover:text-dominos-red active:text-dominos-red transition-colors duration-200 font-medium py-2 px-4 rounded-md hover:bg-gray-50 touch-manipulation">
+                <button
+                  className="text-dominos-blue hover:text-dominos-red active:text-dominos-red transition-colors duration-200 font-medium py-2 px-4 rounded-md hover:bg-gray-50 touch-manipulation"
+                  onClick={() => onNavigate?.('help')}
+                >
                   Help
+                </button>
+                <button
+                  className="text-dominos-blue hover:text-dominos-red active:text-dominos-red transition-colors duration-200 font-medium py-2 px-4 rounded-md hover:bg-gray-50 touch-manipulation"
+                  onClick={() => onNavigate?.('settings')}
+                >
+                  Settings
                 </button>
               </div>
             </nav>
