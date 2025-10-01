@@ -45,14 +45,14 @@ export function useCoupons(
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const fetchCoupons = useCallback(async (storeId: string, language: string) => {
+  const fetchCoupons = useCallback(async (storeId: string, language: string, signal?: AbortSignal) => {
     if (!storeId) return
     
     setLoading(true)
     setError('')
     
     try {
-      const response = await apiService.fetchCoupons(storeId, language)
+      const response = await apiService.fetchCoupons(storeId, language, signal)
       
       // Update rate limit info
       const newRequestCount = response.rateLimit.limit - response.rateLimit.remaining

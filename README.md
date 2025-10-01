@@ -17,7 +17,7 @@ Visit the app: [https://dominos.techbrew.dev](https://dominos.techbrew.dev)
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 18 + TypeScript
+- **Frontend**: React 19 + TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **Build Tool**: Vite
 - **API Integration**: Domino's Pizza API
@@ -69,7 +69,7 @@ npm run dev
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
-- `npm test` - Placeholder script (no tests defined)
+- `npm run analyze` - Analyze bundle size with visualizer
 
 ## 🌟 Key Features
 

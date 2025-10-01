@@ -73,7 +73,8 @@ class ApiService {
 
   async fetchCoupons(
     storeId: string,
-    language: string = 'en'
+    language: string = 'en',
+    signal?: AbortSignal
   ): Promise<FetchCouponsResponse> {
     try {
       const endpoint = import.meta.env.PROD 
@@ -81,6 +82,7 @@ class ApiService {
         : `/power/store/${storeId}/menu?lang=${language}`
 
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        signal,
         headers: {
           ...(sessionStorage.getItem('authToken') && {
             'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`

@@ -69,3 +69,11 @@ export const VALIDATION_PATTERNS = {
   EMAIL: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
   STORE_ID: /^\d+$/
 } as const
+
+// Rate limiting configuration
+export const RATE_LIMIT_CONSTANTS = {
+  WINDOW_MS: 10 * 60 * 1000, // 10 minutes in milliseconds
+  MAX_REQUESTS: 5,
+  STORAGE_KEY: 'rateLimit',
+  RESET_AFTER_MS: 10 * 60 * 1000
+} as const
