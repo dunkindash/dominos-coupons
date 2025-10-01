@@ -68,19 +68,25 @@ function App() {
     loading,
     error,
     fetchCoupons: fetchCouponsHook,
-  } = useCoupons((newRequestCount, newFirstRequestTime) => {
-    setRequestCount(newRequestCount);
-    setFirstRequestTime(newFirstRequestTime);
+  } = useCoupons(
+    (newRequestCount, newFirstRequestTime) => {
+      setRequestCount(newRequestCount);
+      setFirstRequestTime(newFirstRequestTime);
 
-    // Store in localStorage for persistence
-    localStorage.setItem(
-      RATE_LIMIT_CONSTANTS.STORAGE_KEY,
-      JSON.stringify({
-        requestCount: newRequestCount,
-        firstRequestTime: newFirstRequestTime,
-      }),
-    );
-  });
+      // Store in localStorage for persistence
+      localStorage.setItem(
+        RATE_LIMIT_CONSTANTS.STORAGE_KEY,
+        JSON.stringify({
+          requestCount: newRequestCount,
+          firstRequestTime: newFirstRequestTime,
+        }),
+      );
+    },
+    () => {
+      // Handle authentication errors by logging out the user
+      setIsAuthenticated(false);
+    }
+  );
 
   const fetchCoupons = useCallback(async () => {
     if (!storeId) return;

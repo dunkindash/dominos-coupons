@@ -38,7 +38,8 @@ interface UseCouponsReturn {
 }
 
 export function useCoupons(
-  onRateLimitUpdate?: (count: number, resetTime: number | null) => void
+  onRateLimitUpdate?: (count: number, resetTime: number | null) => void,
+  onAuthError?: () => void
 ): UseCouponsReturn {
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
@@ -75,7 +76,7 @@ export function useCoupons(
         // Handle authentication errors
         if (err.status === 401) {
           sessionStorage.removeItem('authToken')
-          // Could trigger a re-authentication flow here
+          onAuthError?.()
         }
       } else {
         setError(err instanceof Error ? err.message : 'An unexpected error occurred')
@@ -83,7 +84,7 @@ export function useCoupons(
     } finally {
       setLoading(false)
     }
-  }, [onRateLimitUpdate])
+  }, [onRateLimitUpdate, onAuthError])
 
   const clearError = useCallback(() => {
     setError('')
