@@ -38,21 +38,22 @@ interface UseCouponsReturn {
 }
 
 export function useCoupons(
-  onRateLimitUpdate?: (count: number, resetTime: number | null) => void
+  onRateLimitUpdate?: (count: number, resetTime: number | null) => void,
+  onAuthError?: () => void
 ): UseCouponsReturn {
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const fetchCoupons = useCallback(async (storeId: string, language: string) => {
+  const fetchCoupons = useCallback(async (storeId: string, language: string, signal?: AbortSignal) => {
     if (!storeId) return
     
     setLoading(true)
     setError('')
     
     try {
-      const response = await apiService.fetchCoupons(storeId, language)
+      const response = await apiService.fetchCoupons(storeId, language, signal)
       
       // Update rate limit info
       const newRequestCount = response.rateLimit.limit - response.rateLimit.remaining
@@ -75,7 +76,7 @@ export function useCoupons(
         // Handle authentication errors
         if (err.status === 401) {
           sessionStorage.removeItem('authToken')
-          // Could trigger a re-authentication flow here
+          onAuthError?.()
         }
       } else {
         setError(err instanceof Error ? err.message : 'An unexpected error occurred')
@@ -83,7 +84,7 @@ export function useCoupons(
     } finally {
       setLoading(false)
     }
-  }, [onRateLimitUpdate])
+  }, [onRateLimitUpdate, onAuthError])
 
   const clearError = useCallback(() => {
     setError('')
